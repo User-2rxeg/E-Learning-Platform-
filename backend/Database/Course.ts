@@ -1,79 +1,66 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-export interface CourseModule {
-  moduleId: Types.ObjectId;
-  title: string;
-  description?: string;
-  contentUrl?: string;
-  order: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface CourseForumThread {
-  threadId: Types.ObjectId;
-  title: string;
-  creator: Types.ObjectId;
-  createdAt: Date;
-}
+// Create a compatibility wrapper for Prop decorator
+const CompatProp: any = Prop;
 
 @Schema({ timestamps: true })
 export class Course extends Document {
-  @Prop({ required: true, unique: true })
-  title: string;
+    @CompatProp({ required: true })
+    title: string;
 
-  @Prop()
-  description?: string;
+    @CompatProp({ required: true })
+    description: string;
 
-  @Prop()
-  thumbnailUrl?: string;
+    @CompatProp({ type: Types.ObjectId, ref: 'User', required: true })
+    instructorId: Types.ObjectId;
 
-  @Prop({ type: [Types.ObjectId], ref: 'User', default: [] })
-  instructors: Types.ObjectId[];
+    @CompatProp([
+        {
+            title: { type: String, required: true },
+            resources: [
+                {
+                    type: {
+                        resourceType: { type: String, enum: ['video', 'pdf', 'link'], required: true },
+                        url: { type: String, required: true },
+                    },
+                },
+            ],
+            quizzes: [{ type: Types.ObjectId, ref: 'Quiz' }],
+            notesEnabled: { type: Boolean, default: false },
+        },
+    ])
+    modules: any[];
 
-  @Prop({ type: [Types.ObjectId], ref: 'User', default: [] })
-  students: Types.ObjectId[];
+    @CompatProp({ type: [String], default: [] })
+    tags: string[];
 
-  @Prop([
-    {
-      moduleId: {
-        type: Types.ObjectId,
-        ref: 'Module',
-        default: () => new Types.ObjectId(),
-      },
-      title: { type: String, required: true },
-      description: { type: String },
-      contentUrl: { type: String },
-      order: { type: Number, required: true },
-      createdAt: { type: Date, default: Date.now },
-      updatedAt: { type: Date, default: Date.now },
-    },
-  ])
-  modules: CourseModule[];
+    @CompatProp([
+        {
+            version: { type: String },
+            updatedAt: { type: Date, default: Date.now },
+            changes: { type: String }, // Optional: summary or JSON diff
+        },
+    ])
+    versionHistory: any[];
 
-  @Prop({ type: [Types.ObjectId], ref: 'ForumThread', default: [] })
-  forumThreads: Types.ObjectId[];
+    @CompatProp({ type: [Types.ObjectId], ref: 'User', default: [] })
+    studentsEnrolled: Types.ObjectId[];
 
-  @Prop({ type: [Types.ObjectId], ref: 'ChatGroup', default: [] })
-  chatGroups: Types.ObjectId[];
+    @CompatProp({ type: String, enum: ['active', 'archived', 'draft'], default: 'draft' })
+    status: string;
 
-  @Prop({ type: [Types.ObjectId], ref: 'User', default: [] })
-  teachingAssistants: Types.ObjectId[];
+    @CompatProp({ type: Boolean, default: false })
+    certificateAvailable: boolean;
 
-  @Prop({ type: Number, default: 0 })
-  enrollmentCount: number;
-
-  @Prop({ type: Number, default: 0 })
-  averageScore: number;
-
-  @Prop({ type: Number, default: 0 })
-  completionRate: number; // percent
-
-  @Prop({ type: Boolean, default: true })
-  isActive: boolean;
+    @CompatProp([
+        {
+            rating: { type: Number, min: 1, max: 5 },
+            comment: { type: String },
+            createdAt: { type: Date, default: Date.now },
+        },
+    ])
+    feedback: any[];
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
-
-CourseSchema.index({ title: 1 });

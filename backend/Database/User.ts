@@ -1,154 +1,75 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-// --- User Roles ---
+export type UserDocument = User & Document;
+
 export enum UserRole {
-  Student = 'student',
-  Instructor = 'instructor',
-  Admin = 'admin',
+    STUDENT = 'student',
+    INSTRUCTOR = 'instructor',
+    ADMIN = 'admin',
 }
 
-// --- Interfaces for Embedded Schemas ---
-export interface EnrolledCourse {
-  courseId: Types.ObjectId;
-  progress: number; // percentage 0-100
-  completed: boolean;
-  averageScore: number;
-}
-
-export interface ChatGroup {
-  groupId: Types.ObjectId;
-  name: string;
-  members: Types.ObjectId[];
-  chatHistory: {
-    sender: Types.ObjectId;
-    message: string;
-    timestamp: Date;
-  }[];
-}
-
-export interface Notification {
-  type: 'message' | 'reply' | 'announcement';
-  content: string;
-  date: Date;
-  read: boolean;
-}
-
-export interface QuickNote {
-  noteId: Types.ObjectId;
-  courseId?: Types.ObjectId;
-  moduleId?: Types.ObjectId;
-  content: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Create a compatibility wrapper if needed
+const CompatProp: any = Prop;
 
 @Schema({ timestamps: true })
-export class User extends Document {
-  @Prop({ required: true, unique: true, lowercase: true })
-  email: string;
+export class User {
+    @CompatProp({ required: true })
+    name: string;
 
-  @Prop({ required: true })
-  password: string; // Hashed with bcrypt
+    @CompatProp({ required: true, unique: true })
+    email: string;
 
-  @Prop({ required: true, enum: UserRole })
-  role: UserRole;
+    @CompatProp({ required: true })
+    password: string; // bcrypt-hashed
 
-  @Prop()
-  name: string;
+    @CompatProp({ enum: UserRole, default: UserRole.STUDENT })
+    role: UserRole;
 
-  @Prop()
-  avatarUrl?: string;
+    @CompatProp({ default: false })
+    isEmailVerified: boolean;
 
-  // Profile and Progress
-  @Prop([
-    {
-      courseId: { type: Types.ObjectId, ref: 'Course' },
-      progress: { type: Number, default: 0 },
-      completed: { type: Boolean, default: false },
-      averageScore: { type: Number, default: 0 },
-    },
-  ])
-  enrolledCourses: EnrolledCourse[];
+    @CompatProp()
+    profileImage?: string;
 
-  // Instructor-specific: list of courses managed
-  @Prop([{ type: Types.ObjectId, ref: 'Course' }])
-  instructorCourses: Types.ObjectId[];
+    @CompatProp({ type: [String], default: [] })
+    learningPreferences?: string[];
 
-  // Analytics and dashboard
-  @Prop({ type: Number, default: 0 })
-  averageScore: number;
+    @CompatProp({ type: [String], default: [] })
+    subjectsOfInterest?: string[];
 
-  @Prop({ type: Number, default: 0 })
-  coursesCompleted: number;
+    @CompatProp({ type: [String], default: [] })
+    expertise?: string[];
 
-  @Prop({ type: Number, default: 0 })
-  engagementScore: number;
+    @CompatProp({ type: [Types.ObjectId], ref: 'Course', default: [] })
+    teachingCourses?: Types.ObjectId[];
 
-  // Chat and Communication
-  @Prop([
-    {
-      groupId: { type: Types.ObjectId, ref: 'ChatGroup' },
-      name: String,
-      members: [{ type: Types.ObjectId, ref: 'User' }],
-      chatHistory: [
-        {
-          sender: { type: Types.ObjectId, ref: 'User' },
-          message: String,
-          timestamp: Date,
-        },
-      ],
-    },
-  ])
-  chatGroups: ChatGroup[];
+    @CompatProp({ type: [Types.ObjectId], ref: 'Course', default: [] })
+    enrolledCourses?: Types.ObjectId[];
 
-  // Forums (could expand with post/thread schemas)
-  @Prop([{ type: Types.ObjectId, ref: 'ForumThread' }])
-  forumThreads: Types.ObjectId[];
+    @CompatProp({ type: [Types.ObjectId], ref: 'Course', default: [] })
+    completedCourses?: Types.ObjectId[];
 
-  // Notifications
-  @Prop([
-    {
-      type: { type: String, enum: ['message', 'reply', 'announcement'] },
-      content: String,
-      date: Date,
-      read: { type: Boolean, default: false },
-    },
-  ])
-  notifications: Notification[];
+    @CompatProp({ default: 0 })
+    averageScore?: number;
 
-  // Saved Conversations (references or integrally stored)
-  @Prop([{ type: Types.ObjectId, ref: 'ChatMessage' }])
-  savedConversations: Types.ObjectId[];
-
-  // Security features
-  @Prop()
-  mfaEnabled?: boolean;
-
-  @Prop()
-  failedLoginAttempts?: number;
-
-  @Prop()
-  biometricHash?: string; // For biometric authentication (optional)
-
-  // --- Additional Features ---
-  // Quick Notes
-  @Prop([
-    {
-      noteId: { type: Types.ObjectId, default: () => new Types.ObjectId() },
-      courseId: { type: Types.ObjectId, ref: 'Course' },
-      moduleId: { type: Types.ObjectId, ref: 'Module' },
-      content: String,
-      createdAt: { type: Date, default: Date.now },
-      updatedAt: Date,
-    },
-  ])
-  quickNotes?: QuickNote[];
-
-  // --- Timestamps & Backup Information handled by Mongoose and backup services ---
+    @CompatProp({
+        type: [
+            {
+                type: { type: String },
+                message: String,
+                read: { type: Boolean, default: false },
+                date: { type: Date, default: Date.now },
+            },
+        ],
+        default: [],
+    })
+    notifications?: {
+        type: string;
+        message: string;
+        read: boolean;
+        date: Date;
+    }[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-
-// Index for searching instructor/student by name/email
-UserSchema.index({ name: 1, email: 1, role: 1 });
