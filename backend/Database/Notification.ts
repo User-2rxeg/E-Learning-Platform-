@@ -1,45 +1,25 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types, Document } from 'mongoose';
+// Notification.ts
+import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
 
-export type NotificationType =
-  | 'message'
-  | 'reply'
-  | 'announcement'
-  | 'forum'
-  | 'quiz'
-  | 'system';
+const CompatProp: any = Prop;
 
 @Schema({ timestamps: true })
 export class Notification extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  userId: Types.ObjectId;
+    @CompatProp({ type: Types.ObjectId, ref: 'User', required: true })
+    recipientId: Types.ObjectId;
 
-  @Prop({
-    type: String,
-    enum: ['message', 'reply', 'announcement', 'forum', 'quiz', 'system'],
-    required: true,
-  })
-  type: NotificationType;
+    @CompatProp({ type: String, required: true })
+    type: string;
 
-  @Prop({ required: true })
-  content: string;
+    @CompatProp({ type: String, required: true })
+    message: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Course' })
-  courseId?: Types.ObjectId;
+    @CompatProp({ type: Boolean, default: false })
+    read: boolean;
 
-  @Prop({ type: Types.ObjectId, ref: 'ForumThread' })
-  threadId?: Types.ObjectId;
-
-  @Prop({ type: Date, default: Date.now })
-  date: Date;
-
-  @Prop({ type: Boolean, default: false })
-  read: boolean;
-
-  @Prop()
-  link?: string; // For deep linking to resource (optional)
+    @CompatProp({ type: Date, default: Date.now })
+    createdAt: Date;
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);
-
-NotificationSchema.index({ userId: 1, read: 1, date: -1 });
