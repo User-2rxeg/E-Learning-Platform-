@@ -1,24 +1,18 @@
-// AuditLogDto.ts
 import { IsString, IsMongoId, IsDate, IsOptional } from 'class-validator';
 
-const CompatIsString: any = IsString;
-const CompatIsMongoId: any = IsMongoId;
-const CompatIsDate: any = IsDate;
-const CompatIsOptional: any = IsOptional;
-
 export class CreateAuditLogDto {
-    @CompatIsMongoId()
-    @CompatIsOptional()
+    @IsMongoId()
+    @IsOptional()
     userId?: string;
 
-    @CompatIsString()
-    event: string;
+    @IsString()
+    event!: string;
 
-    @CompatIsDate()
-    timestamp: Date;
+    @IsDate()
+    timestamp!: Date;
 
-    @CompatIsString()
-    @CompatIsOptional()
+    @IsString()
+    @IsOptional()
     details?: string;
 }
 

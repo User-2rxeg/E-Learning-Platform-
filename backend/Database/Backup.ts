@@ -1,19 +1,18 @@
-// Backup.ts
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
 
-const CompatProp: any = Prop;
+export type BackupDocument = HydratedDocument<Backup>;
 
 @Schema()
-export class Backup extends Document {
-    @CompatProp({ type: Date, default: Date.now, required: true })
-    backupDate: Date;
+export class Backup {
+    @Prop({ type: Date, default: Date.now, required: true })
+    backupDate: Date = new Date();
 
-    @CompatProp({ type: String, required: true })
-    dataType: string;
+    @Prop({ type: String, required: true })
+    dataType!: string;
 
-    @CompatProp({ type: String, required: true })
-    storageLink: string;
+    @Prop({ type: String, required: true })
+    storageLink!: string;
 }
 
 export const BackupSchema = SchemaFactory.createForClass(Backup);

@@ -1,14 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import 'reflect-metadata';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
-    const port = process.env.PORT || 3000;
+    const port = process.env.PORT || 3001;
 
     try {
         await app.listen(port);
         console.log(`Application running on port ${port}`);
-    } catch (error) {
+    } catch (error: any) {
         if (error.code === 'EADDRINUSE') {
             console.error(`Port ${port} is already in use. Please set a different PORT in your .env file.`);
         } else {
@@ -17,4 +18,5 @@ async function bootstrap() {
         process.exit(1);
     }
 }
+
 bootstrap();
