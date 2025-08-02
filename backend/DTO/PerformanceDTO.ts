@@ -2,62 +2,52 @@
 import { IsNumber, IsArray, IsMongoId, IsOptional, ValidateNested, IsDate, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
-// Compatibility wrappers
-const CompatIsNumber: any = IsNumber;
-const CompatIsArray: any = IsArray;
-const CompatIsMongoId: any = IsMongoId;
-const CompatIsOptional: any = IsOptional;
-const CompatValidateNested: any = ValidateNested;
-const CompatIsDate: any = IsDate;
-const CompatIsString: any = IsString;
-const CompatType: any = Type;
-
 class ScoreDto {
-    @CompatIsMongoId()
-    @CompatIsOptional()
+    @IsMongoId()
+    @IsOptional()
     moduleId?: string;
 
-    @CompatIsMongoId()
-    @CompatIsOptional()
+    @IsMongoId()
+    @IsOptional()
     quizId?: string;
 
-    @CompatIsNumber()
-    score: number;
+    @IsNumber()
+    score!: number;
 }
 
 class EngagementLogDto {
-    @CompatIsDate()
-    @CompatIsOptional()
+    @IsDate()
+    @IsOptional()
     timestamp?: Date;
 
-    @CompatIsNumber()
-    duration: number;
+    @IsNumber()
+    duration!: number;
 
-    @CompatIsString()
-    activity: string;
+    @IsString()
+    activity!: string;
 }
 
 export class CreatePerformanceDto {
-    @CompatIsMongoId()
-    studentId: string;
+    @IsMongoId()
+    studentId!: string;
 
-    @CompatIsMongoId()
-    courseId: string;
+    @IsMongoId()
+    courseId!: string;
 
-    @CompatIsNumber()
-    @CompatIsOptional()
+    @IsNumber()
+    @IsOptional()
     progress?: number;
 
-    @CompatIsArray()
-    @CompatValidateNested({ each: true })
-    @CompatType(() => ScoreDto)
-    @CompatIsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ScoreDto)
+    @IsOptional()
     scores?: ScoreDto[];
 
-    @CompatIsArray()
-    @CompatValidateNested({ each: true })
-    @CompatType(() => EngagementLogDto)
-    @CompatIsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => EngagementLogDto)
+    @IsOptional()
     engagementLog?: EngagementLogDto[];
 }
 

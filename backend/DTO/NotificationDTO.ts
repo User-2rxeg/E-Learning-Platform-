@@ -1,26 +1,20 @@
-// NotificationDto.ts
 import { IsString, IsMongoId, IsBoolean, IsDate } from 'class-validator';
 
-const CompatIsString: any = IsString;
-const CompatIsMongoId: any = IsMongoId;
-const CompatIsBoolean: any = IsBoolean;
-const CompatIsDate: any = IsDate;
-
 export class CreateNotificationDto {
-    @CompatIsMongoId()
-    recipientId: string;
+    @IsMongoId()
+    recipientId!: string;
 
-    @CompatIsString()
-    type: string;
+    @IsString()
+    type!: string;
 
-    @CompatIsString()
-    message: string;
+    @IsString()
+    message!: string;
 
-    @CompatIsBoolean()
-    read: boolean;
+    @IsBoolean()
+    read!: boolean;
 
-    @CompatIsDate()
-    createdAt: Date;
+    @IsDate()
+    createdAt!: Date;
 }
 
 export class UpdateNotificationDto extends CreateNotificationDto {}

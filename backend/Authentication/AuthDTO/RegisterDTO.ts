@@ -1,7 +1,9 @@
-import { IsString, IsEmail, IsEnum, IsOptional, IsArray } from 'class-validator';
-import { UserRole } from '../Database/User';
+// src/auth/AuthDTO/RegisterDTO.ts
 
-export class CreateUserDto {
+import { IsString, IsEmail, IsOptional, IsEnum, IsArray } from 'class-validator';
+import { UserRole } from '../../Database/User';
+
+export class RegisterDto {
     @IsString()
     name!: string;
 
@@ -11,8 +13,8 @@ export class CreateUserDto {
     @IsString()
     password!: string;
 
-    @IsEnum(UserRole)
     @IsOptional()
+    @IsEnum(UserRole)
     role?: UserRole;
 
     @IsOptional()

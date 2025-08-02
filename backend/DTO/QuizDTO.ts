@@ -2,47 +2,37 @@
 import { IsString, IsBoolean, IsArray, IsMongoId, IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-// Compatibility wrappers
-const CompatIsString: any = IsString;
-const CompatIsBoolean: any = IsBoolean;
-const CompatIsArray: any = IsArray;
-const CompatIsMongoId: any = IsMongoId;
-const CompatIsEnum: any = IsEnum;
-const CompatIsOptional: any = IsOptional;
-const CompatValidateNested: any = ValidateNested;
-const CompatType: any = Type;
-
 class QuestionDto {
-    @CompatIsString()
-    questionText: string;
+    @IsString()
+    questionText!: string;
 
-    @CompatIsArray()
-    @CompatIsString({ each: true })
-    choices: string[];
+    @IsArray()
+    @IsString({ each: true })
+    choices!: string[];
 
-    @CompatIsString()
-    correctAnswer: string;
+    @IsString()
+    correctAnswer!: string;
 
-    @CompatIsEnum(['easy', 'medium', 'hard'])
-    @CompatIsOptional()
+    @IsEnum(['easy', 'medium', 'hard'])
+    @IsOptional()
     difficulty?: string;
 }
 
 export class CreateQuizDto {
-    @CompatIsMongoId()
-    moduleId: string;
+    @IsMongoId()
+    moduleId!: string;
 
-    @CompatIsArray()
-    @CompatValidateNested({ each: true })
-    @CompatType(() => QuestionDto)
-    questions: QuestionDto[];
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => QuestionDto)
+    questions!: QuestionDto[];
 
-    @CompatIsBoolean()
-    @CompatIsOptional()
+    @IsBoolean()
+    @IsOptional()
     adaptive?: boolean;
 
-    @CompatIsMongoId()
-    createdBy: string;
+    @IsMongoId()
+    createdBy!: string;
 }
 
 export class UpdateQuizDto extends CreateQuizDto {}

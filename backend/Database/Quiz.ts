@@ -1,27 +1,41 @@
-// Quiz.ts
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+// Database/Quiz.ts
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
-const CompatProp: any = Prop;
+export type QuizDocument = HydratedDocument<Quiz>;
 
 @Schema({ timestamps: true })
-export class Quiz extends Document {
-    @CompatProp({ type: Types.ObjectId, ref: 'Course', required: true })
-    moduleId: Types.ObjectId;
+export class Quiz {
+    @Prop({ type: Types.ObjectId, ref: 'Course', required: true })
+    moduleId!: Types.ObjectId;
 
-    @CompatProp([{
-        questionText: { type: String, required: true },
-        choices: [{ type: String }],
-        correctAnswer: { type: String, required: true },
-        difficulty: { type: String, enum: ['easy', 'medium', 'hard'], default: 'medium' }
-    }])
-    questions: any[];
+    @Prop({
+        type: [
+            {
+                questionText: { type: String, required: true },
+                choices: [{ type: String }],
+                correctAnswer: { type: String, required: true },
+                difficulty: {
+                    type: String,
+                    enum: ['easy', 'medium', 'hard'],
+                    default: 'medium',
+                },
+            },
+        ],
+        default: [],
+    })
+    questions!: {
+        questionText: string;
+        choices: string[];
+        correctAnswer: string;
+        difficulty: 'easy' | 'medium' | 'hard';
+    }[];
 
-    @CompatProp({ type: Boolean, default: false })
-    adaptive: boolean;
+    @Prop({ default: false })
+    adaptive!: boolean;
 
-    @CompatProp({ type: Types.ObjectId, ref: 'User', required: true })
-    createdBy: Types.ObjectId;
+    @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+    createdBy!: Types.ObjectId;
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);

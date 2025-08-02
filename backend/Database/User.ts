@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
-export type UserDocument = User & Document;
+export type UserDocument = HydratedDocument<User>;
 
 export enum UserRole {
     STUDENT = 'student',
@@ -9,51 +9,48 @@ export enum UserRole {
     ADMIN = 'admin',
 }
 
-// Create a compatibility wrapper if needed
-const CompatProp: any = Prop;
-
 @Schema({ timestamps: true })
 export class User {
-    @CompatProp({ required: true })
-    name: string;
+    @Prop({ required: true })
+    name!: string;
 
-    @CompatProp({ required: true, unique: true })
-    email: string;
+    @Prop({ required: true, unique: true })
+    email!: string;
 
-    @CompatProp({ required: true })
-    password: string; // bcrypt-hashed
+    @Prop({ required: true })
+    password!: string;
 
-    @CompatProp({ enum: UserRole, default: UserRole.STUDENT })
-    role: UserRole;
+    @Prop({ enum: Object.values(UserRole), default: UserRole.STUDENT })  // <-- FIXED Enum Binding
+    role!: UserRole;
 
-    @CompatProp({ default: false })
-    isEmailVerified: boolean;
+    @Prop({ default: false })
+    isEmailVerified!: boolean;
 
-    @CompatProp()
+    @Prop()
     profileImage?: string;
 
-    @CompatProp({ type: [String], default: [] })
+    @Prop({ type: [String], default: [] })
     learningPreferences?: string[];
 
-    @CompatProp({ type: [String], default: [] })
+    @Prop({ type: [String], default: [] })
     subjectsOfInterest?: string[];
 
-    @CompatProp({ type: [String], default: [] })
+    @Prop({ type: [String], default: [] })
     expertise?: string[];
 
-    @CompatProp({ type: [Types.ObjectId], ref: 'Course', default: [] })
+    @Prop({ type: [Types.ObjectId], ref: 'Course', default: [] })
     teachingCourses?: Types.ObjectId[];
 
-    @CompatProp({ type: [Types.ObjectId], ref: 'Course', default: [] })
+    @Prop({ type: [Types.ObjectId], ref: 'Course', default: [] })
     enrolledCourses?: Types.ObjectId[];
 
-    @CompatProp({ type: [Types.ObjectId], ref: 'Course', default: [] })
+    @Prop({ type: [Types.ObjectId], ref: 'Course', default: [] })
     completedCourses?: Types.ObjectId[];
 
-    @CompatProp({ default: 0 })
+    @Prop({ default: 0 })
     averageScore?: number;
 
-    @CompatProp({
+    @Prop({
         type: [
             {
                 type: { type: String },
