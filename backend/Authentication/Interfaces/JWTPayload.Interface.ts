@@ -1,4 +1,4 @@
-import { UserRole } from '../../Database/User'; // Adjust path as needed
+import { UserRole } from '../../Database/User';
 
 export interface JwtPayload {
     sub: string; // user._id
