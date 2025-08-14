@@ -1,4 +1,3 @@
-// Database/Quiz.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 
@@ -12,6 +11,7 @@ export class Quiz {
     @Prop({
         type: [
             {
+                questionId: { type: String, required: true },  // <-- Manual Unique ID
                 questionText: { type: String, required: true },
                 choices: [{ type: String }],
                 correctAnswer: { type: String, required: true },
@@ -25,6 +25,7 @@ export class Quiz {
         default: [],
     })
     questions!: {
+        questionId: string;
         questionText: string;
         choices: string[];
         correctAnswer: string;

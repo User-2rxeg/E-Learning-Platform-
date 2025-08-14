@@ -1,15 +1,15 @@
 import { Type } from "class-transformer";
-import {IsArray, IsBoolean, IsEnum, IsMongoId, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsBoolean, IsEnum, IsMongoId, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
 
-class ResourceDto {
+export class ResourceDto {
     @IsEnum(['video', 'pdf', 'link'])
-    resourceType!: string;
+    resourceType!: 'video' | 'pdf' | 'link';
 
     @IsString()
     url!: string;
 }
 
-class ModuleDto {
+export class ModuleDto {
     @IsString()
     title!: string;
 
@@ -60,11 +60,37 @@ export class CourseDTO {
 
     @IsEnum(['active', 'archived', 'draft'])
     @IsOptional()
-    status?: string;
+    status?: 'active' | 'archived' | 'draft';
 
     @IsBoolean()
     @IsOptional()
     certificateAvailable?: boolean;
 }
 
-export class UpdateCourseDto extends CourseDTO {}
+export class UpdateCourseDto extends CourseDTO {
+    @IsMongoId()
+    @IsOptional()
+    instructorId !: string;
+}
+
+import { PartialType } from '@nestjs/mapped-types';
+
+
+//export class UpdateCourseDto extends PartialType(CreateCourseDto) {}
+
+
+
+export class SearchCourseDto {
+    @IsOptional()
+    @IsString()
+    title?: string;
+
+    @IsOptional()
+    @IsString()
+    instructorName?: string;
+
+    @IsOptional()
+    @IsString()
+    tag?: string;
+}
+

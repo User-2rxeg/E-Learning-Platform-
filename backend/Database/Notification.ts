@@ -19,6 +19,18 @@ export class Notification {
 
     @Prop({ type: Date, default: Date.now })
     createdAt: Date = new Date();
+
+    @Prop({ type: Types.ObjectId, ref: 'Course', required: false })
+    courseId?: Types.ObjectId;
+
+    @Prop({ type: Types.ObjectId, ref: 'User' })
+    sentBy?: Types.ObjectId;  // The admin/instructor who sent this notification
+
+
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);
+
+// Helpful indexes:
+//NotificationSchema.index({ recipientId: 1, createdAt: -1 });
+//NotificationSchema.index({ recipientId: 1, read: 1, createdAt:-1});

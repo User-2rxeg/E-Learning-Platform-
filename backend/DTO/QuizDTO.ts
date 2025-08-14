@@ -35,4 +35,26 @@ export class CreateQuizDto {
     createdBy!: string;
 }
 
+
+
+class AttemptAnswerDto {
+    //@IsMongoId()
+    @IsString()
+    questionId!: string;
+
+    @IsString()
+    selectedAnswer!: string;
+}
+
+export class AttemptQuizDto {
+    @IsMongoId()
+    quizId!: string;
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => AttemptAnswerDto)
+    responses!: AttemptAnswerDto[];
+}
+
+
 export class UpdateQuizDto extends CreateQuizDto {}

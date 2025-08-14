@@ -1,33 +1,38 @@
-import { Module } from '@nestjs/common';
+
+
+import { Module, forwardRef } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
 import { AuthService } from './AuthService';
 import { AuthController } from './AuthController';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from './Strategies/JWT.Strategies';
-import { UserModule } from '../User/User.Module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+
+
 import { BlacklistedToken, BlacklistedTokenSchema } from '../Database/BlacklistedToken';
+import { UserModule } from '../User/User.Module';
+import {TempJwtGuard} from "./Guards/Temp-JWT-Guard";
+import {TempJwtStrategy} from "./Strategies/Temp-JWT-Strategies";
+import {JwtStrategy} from "./Strategies/JWT.Strategies"; // <-- exact path & casing
 
 @Module({
     imports: [
         ConfigModule,
-        UserModule,
-        PassportModule,
         JwtModule.registerAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
-            useFactory: (configService: ConfigService) => ({
-                secret: configService.get<string>('JWT_SECRET'),
-                signOptions: { expiresIn: '1h' },
+            useFactory: (cfg: ConfigService) => ({
+                secret: cfg.get<string>('JWT_SECRET'),
+                signOptions: { expiresIn: cfg.get<string>('JWT_EXPIRES_IN') || '1h' },
             }),
         }),
         MongooseModule.forFeature([
             { name: BlacklistedToken.name, schema: BlacklistedTokenSchema },
         ]),
+        forwardRef(() => UserModule), // <-- nothing else in imports!
     ],
     controllers: [AuthController],
-    providers: [AuthService, JwtStrategy],
-    exports: [AuthService],
+    providers: [AuthService, JwtStrategy, TempJwtStrategy, TempJwtGuard],
+    exports: [AuthService, JwtModule], // AuthService needed by guards in other modules
 })
 export class AuthModule {}

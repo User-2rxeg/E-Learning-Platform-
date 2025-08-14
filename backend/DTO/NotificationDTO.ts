@@ -1,8 +1,9 @@
-import { IsString, IsMongoId, IsBoolean, IsDate } from 'class-validator';
+// src/DTO/NotificationDTO.ts
+import { IsString, IsMongoId, IsOptional } from 'class-validator';
 
 export class CreateNotificationDto {
     @IsMongoId()
-    recipientId!: string;
+    recipientId!: string;         // string, not Types.ObjectId
 
     @IsString()
     type!: string;
@@ -10,11 +11,22 @@ export class CreateNotificationDto {
     @IsString()
     message!: string;
 
-    @IsBoolean()
-    read!: boolean;
-
-    @IsDate()
-    createdAt!: Date;
+    @IsMongoId()
+    @IsOptional()
+    courseId?: string;            // optional
 }
 
-export class UpdateNotificationDto extends CreateNotificationDto {}
+// For updates, do not allow client to set read/createdAt/sentBy directly
+export class UpdateNotificationDto {
+    @IsString()
+    @IsOptional()
+    type?: string;
+
+    @IsString()
+    @IsOptional()
+    message?: string;
+
+    @IsMongoId()
+    @IsOptional()
+    courseId?: string;
+}

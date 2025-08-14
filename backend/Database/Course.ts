@@ -1,4 +1,3 @@
-// Course.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 
@@ -21,14 +20,12 @@ export class Course {
                 title: { type: String, required: true },
                 resources: [
                     {
-                        type: {
-                            resourceType: {
-                                type: String,
-                                enum: ['video', 'pdf', 'link'],
-                                required: true,
-                            },
-                            url: { type: String, required: true },
+                        resourceType: {
+                            type: String,
+                            enum: ['video', 'pdf', 'link'],
+                            required: true,
                         },
+                        url: { type: String, required: true },
                     },
                 ],
                 quizzes: [{ type: Types.ObjectId, ref: 'Quiz' }],
@@ -37,7 +34,15 @@ export class Course {
         ],
         default: [],
     })
-    modules!: any[];
+    modules!: {
+        title: string;
+        resources: {
+            resourceType: 'video' | 'pdf' | 'link';
+            url: string;
+        }[];
+        quizzes?: Types.ObjectId[];
+        notesEnabled?: boolean;
+    }[];
 
     @Prop({ type: [String], default: [] })
     tags: string[] = [];
@@ -52,16 +57,21 @@ export class Course {
         ],
         default: [],
     })
-    versionHistory!: any[];
+    versionHistory!: {
+        version: string;
+        updatedAt: Date;
+        changes: string;
+    }[];
 
     @Prop({ type: [Types.ObjectId], ref: 'User', default: [] })
     studentsEnrolled: Types.ObjectId[] = [];
 
     @Prop({ type: String, enum: ['active', 'archived', 'draft'], default: 'draft' })
-    status: string = 'draft';
+    status: 'active' | 'archived' | 'draft' = 'draft';
 
     @Prop({ type: Boolean, default: false })
     certificateAvailable: boolean = false;
+    @Prop({ type: Date, required: false }) archivedAt?: Date;
 
     @Prop({
         type: [
@@ -73,7 +83,18 @@ export class Course {
         ],
         default: [],
     })
-    feedback!: any[];
+    feedback!: {
+        rating: number;
+        comment?: string;
+        createdAt: Date;
+    }[];
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
+
+// inside Course class (you already added status; add archivedAt if you want)
+
+
+// after SchemaFactory
+//CourseSchema.index({ title: 'text', description: 'text' });
+//CourseSchema.index({ status: 1, createdAt: -1 });

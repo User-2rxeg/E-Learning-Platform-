@@ -1,4 +1,3 @@
-// PerformanceDto.ts
 import { IsNumber, IsArray, IsMongoId, IsOptional, ValidateNested, IsDate, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -13,11 +12,17 @@ class ScoreDto {
 
     @IsNumber()
     score!: number;
+
+    @IsOptional()
+    @IsDate()
+    @Type(() => Date)
+    completedAt?: Date;
 }
 
 class EngagementLogDto {
-    @IsDate()
     @IsOptional()
+    @IsDate()
+    @Type(() => Date)
     timestamp?: Date;
 
     @IsNumber()
@@ -51,4 +56,6 @@ export class CreatePerformanceDto {
     engagementLog?: EngagementLogDto[];
 }
 
-export class UpdatePerformanceDto extends CreatePerformanceDto {}
+import { PartialType } from '@nestjs/mapped-types';
+
+export class UpdatePerformanceDto extends PartialType(CreatePerformanceDto) {}

@@ -19,3 +19,7 @@ export class AuditLog {
 }
 
 export const AuditLogSchema = SchemaFactory.createForClass(AuditLog);
+
+
+//AuditLogSchema.index({ event: 1, timestamp: -1 });
+//AuditLogSchema.index({ userId: 1, timestamp: -1 });
