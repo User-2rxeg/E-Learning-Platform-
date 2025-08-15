@@ -15,34 +15,51 @@ export class Course {
     instructorId!: Types.ObjectId;
 
     @Prop({
-        type: [
-            {
-                title: { type: String, required: true },
-                resources: [
-                    {
-                        resourceType: {
-                            type: String,
-                            enum: ['video', 'pdf', 'link'],
-                            required: true,
-                        },
-                        url: { type: String, required: true },
-                    },
-                ],
-                quizzes: [{ type: Types.ObjectId, ref: 'Quiz' }],
-                notesEnabled: { type: Boolean, default: false },
-            },
-        ],
-        default: [],
-    })
+             type: [
+                 {
+                     title: { type: String, required: true },
+                     resources: [
+                         {
+                             // kept your existing fields:
+                             resourceType: {
+                                 type: String,
+                                 enum: ['video', 'pdf', 'link'],
+                                 required: true,
+                             },
+                             url: { type: String, required: true },
+
+                             // NEW metadata (optional; won’t break existing docs)
+                             filename: { type: String },             // stored filename for files
+                             mimeType: { type: String },             // uploaded file mimetype
+                             size: { type: Number },                 // bytes
+                             uploadedBy: { type: Types.ObjectId, ref: 'User' },
+                             uploadedAt: { type: Date, default: Date.now },
+                         },
+                     ],
+                     quizzes: [{ type: Types.ObjectId, ref: 'Quiz' }],
+                     notesEnabled: { type: Boolean, default: false },
+                 },
+             ],
+             default: [],
+         })
     modules!: {
         title: string;
         resources: {
+            _id?: any;                       // subdoc id
             resourceType: 'video' | 'pdf' | 'link';
             url: string;
+
+            filename?: string;
+            mimeType?: string;
+            size?: number;
+            uploadedBy?: Types.ObjectId;
+            uploadedAt?: Date;
         }[];
         quizzes?: Types.ObjectId[];
         notesEnabled?: boolean;
     }[];
+
+
 
     @Prop({ type: [String], default: [] })
     tags: string[] = [];
@@ -94,7 +111,7 @@ export const CourseSchema = SchemaFactory.createForClass(Course);
 
 // inside Course class (you already added status; add archivedAt if you want)
 
+CourseSchema.index({ title: 'text', description: 'text', tags: 'text' });
 
-// after SchemaFactory
-//CourseSchema.index({ title: 'text', description: 'text' });
-//CourseSchema.index({ status: 1, createdAt: -1 });
+CourseSchema.index({ title: 'text', description: 'text' });
+CourseSchema.index({ status: 1, createdAt: -1 });

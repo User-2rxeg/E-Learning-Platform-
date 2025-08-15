@@ -72,6 +72,6 @@ export class Performance {
 
 export const PerformanceSchema = SchemaFactory.createForClass(Performance);
 // (optional helpful index)
-//PerformanceSchema.index({ studentId: 1, courseId: 1 });
+PerformanceSchema.index({ studentId: 1, courseId: 1 });
 
 

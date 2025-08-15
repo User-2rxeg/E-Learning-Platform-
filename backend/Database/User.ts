@@ -89,16 +89,16 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-// Useful indexes
-//UserSchema.index({ email: 1 }, { unique: true });         // explicit unique
-//UserSchema.index({ name: 1 });                            // prefix search on name
-//UserSchema.index({ email: 1, name: 1 });                  // compound to help mixed filters
-// Optional: text index if you want text search (phrase/relevance)
-// UserSchema.index({ name: 'text', email: 'text' });
+
+UserSchema.index({ email: 1 }, { unique: true });         // explicit unique
+UserSchema.index({ name: 1 });                            // prefix search on name
+UserSchema.index({ email: 1, name: 1 });                  // compound to help mixed filters
+
+ UserSchema.index({ name: 'text', email: 'text' });
 
 
-//UserSchema.index({ role: 1, createdAt: -1 });
-//UserSchema.index({ name: 'text', email:'text'});
+UserSchema.index({ role: 1, createdAt: -1 });
+
 
 
 UserSchema.set('toJSON', {
@@ -117,6 +117,6 @@ UserSchema.set('toObject', {
         if (ret?.password) {
             delete ret.password;
         }
-        return ret;
+        return ret;
     },
 });

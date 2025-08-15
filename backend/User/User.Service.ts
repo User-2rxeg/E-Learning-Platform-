@@ -14,7 +14,7 @@ export class UserService {
     ) {}
 
 
-    async create(createUserDto: CreateUserDto): Promise<User> {
+    async create(createUserDto: CreateUserDto): Promise<UserDocument> {
         const existingUser = await this.userModel.findOne({ email: createUserDto.email });
         if (existingUser) {
             throw new BadRequestException('Email is already registered');
@@ -24,7 +24,10 @@ export class UserService {
         const createdUser = new this.userModel({
             ...createUserDto,
             password: hashedPassword,
-            role: createUserDto.role || 'student', // default role
+            role: createUserDto.role || 'student',
+            isEmailVerified:false,
+            otpCode:null,
+            otpExpiresAt:null,// default role
         });
 
         return createdUser.save();

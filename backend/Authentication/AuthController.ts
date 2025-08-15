@@ -44,7 +44,7 @@ export class AuthController {
     async refresh(@Body('refreshToken') refreshToken: string) {
         return this.authService.refreshToken(refreshToken);
     }
-@Public()
+
     @UseGuards(JwtAuthGuard)
     @HttpCode(HttpStatus.OK)
     @Post('logout')
@@ -58,7 +58,7 @@ export class AuthController {
 
         return { message: 'Logout successful' };
     }
-@Public()
+
     @UseGuards(JwtAuthGuard)
     @Get('me')
     async getProfile(@CurrentUser() user: JwtPayload) {

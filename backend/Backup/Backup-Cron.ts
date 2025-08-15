@@ -13,7 +13,7 @@ export class BackupCron {
     async nightly() {
         try {
             const res = await this.backups.runBackup({ dataType: 'all' });
-            this.logger.log('Nightly backup OK: ${JSON.stringify(res.results)}');
+            this.logger.log(`Nightly backup OK: ${JSON.stringify(res.results)}`);
         } catch (e) {
             this.logger.error('Nightly backup failed', e as any);
         }

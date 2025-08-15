@@ -8,8 +8,8 @@ import {RolesGuard} from "../../Authentication/Guards/RolesGuard";
 import {ForumService} from "./Forum.Service";
 import {Roles} from "../../Authentication/Decorators/Roles-Decorator";
 
+@UseGuards(RolesGuard,JwtAuthGuard)
 @Controller('forums')
-
 export class ForumController {
     constructor(private readonly forumService: ForumService) {}
 
@@ -105,5 +105,34 @@ export class ForumController {
         @Query('keyword') keyword: string
     ) {
         return this.forumService.searchThreads(forumId, keyword);
+    }
+
+    // GET /forums/:forumId/threads?page=1&limit=20&q=keyword
+    @Get(':forumId/threads')
+    async listThreads(
+        @Param('forumId') forumId: string,
+        @Query('page') page = '1',
+        @Query('limit') limit = '20',
+        @Query('q') q?: string,
+    ) {
+        return this.forumService.listThreads(forumId, {
+            page: Math.max(1, parseInt(page, 10) || 1),
+            limit: Math.min(100, Math.max(1, parseInt(limit, 10) || 20)),
+            q: q?.trim(),
+        });
+    }
+
+// GET /forums/:forumId/threads/:threadId/posts?page=1&limit=20
+    @Get(':forumId/threads/:threadId/posts')
+    async listPosts(
+        @Param('forumId') forumId: string,
+        @Param('threadId') threadId: string,
+        @Query('page') page = '1',
+        @Query('limit') limit = '20',
+    ) {
+        return this.forumService.listPosts(forumId, threadId, {
+            page: Math.max(1, parseInt(page, 10) || 1),
+            limit: Math.min(100, Math.max(1, parseInt(limit, 10) || 20)),
+        });
     }
 }

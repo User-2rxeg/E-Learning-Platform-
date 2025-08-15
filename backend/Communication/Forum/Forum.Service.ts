@@ -5,7 +5,7 @@ import {Forum, ForumDocument,} from '../../Database/Forum';
 //import { CreateForumDto, UpdateForumDto } from '../DTO/ForumDTO;
 import { UserRole } from '../../Database/User';
 import {CreateForumDto} from "../../DTO/ForumDTO";
-
+type Page = { page?: number; limit?: number; q?: string };
 @Injectable()
 export class ForumService {
     constructor(
@@ -59,24 +59,6 @@ export class ForumService {
         return { message: 'Post added successfully' };
     }
 
-    async likePost(courseId: string, threadId: string, postId: string, userId: string) {
-        const forum = await this.getForumByCourseId(courseId);
-
-        const thread = forum.threads.id(threadId);
-        if (!thread) throw new NotFoundException('Thread not found');
-
-        const post = thread.posts.id(postId);
-        if (!post) throw new NotFoundException('Post not found');
-
-        const alreadyLiked = post.likes.includes(new Types.ObjectId(userId));
-        if (alreadyLiked) {
-            throw new ForbiddenException('You have already liked this post');
-        }
-
-        post.likes.push(new Types.ObjectId(userId));
-        await forum.save();
-        return forum;
-    }
 
     async getForumByCourse(courseId: string) {
         return this.forumModel.findOne({ courseId: new Types.ObjectId(courseId) }).populate('threads.createdBy threads.posts.author');
@@ -175,4 +157,49 @@ export class ForumService {
     }
 
 
+
+
+    async listThreads(forumId: string, { page = 1, limit = 20, q }: { page?: number; limit?: number; q?: string }) {
+        const forum = await this.forumModel.findById(forumId).lean().exec();
+        if (!forum) throw new NotFoundException('Forum not found');
+
+        const term = q?.trim()?.toLowerCase();
+        let threads = (forum.threads ?? []) as Array<{
+            _id: any;
+            title?: string;
+            createdAt?: Date | string;
+            posts?: any[];
+        }>;
+
+        if (term) {
+            threads = threads.filter(t => (t.title ?? '').toLowerCase().includes(term));
+        }
+
+        const total = threads.length;
+
+        threads.sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime());
+
+        const start = (page - 1) * limit;
+        const items = threads.slice(start, start + limit);
+
+        return { items, total, page, limit };
+    }
+
+    async listPosts(forumId: string, threadId: string, { page = 1, limit = 20 }: { page?: number; limit?: number }) {
+        const forum = await this.forumModel.findById(forumId).lean().exec();
+        if (!forum) throw new NotFoundException('Forum not found');
+
+        const thread = (forum.threads ?? []).find((t: any) => String(t._id) === String(threadId));
+        if (!thread) throw new NotFoundException('Thread not found');
+
+        const posts = [...(thread.posts ?? [])].sort(
+            (a: any, b: any) => new Date(a.timestamp ?? 0).getTime() - new Date(b.timestamp ?? 0).getTime()
+        );
+        const total = posts.length;
+
+        const start = (page - 1) * limit;
+        const items = posts.slice(start, start + limit);
+
+        return { items, total, page, limit };
+    }
 }

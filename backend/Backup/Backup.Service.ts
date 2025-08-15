@@ -63,7 +63,7 @@ export class BackupService {
             else if (t === 'performances') data = await this.dumpPerformances();
             else continue;
 
-            const filename = 'backup-${t}-${ts}.json';      // <-- backticks
+            const filename = `backup-${t}-${ts}.json`;      // <-- backticks
             const filepath = path.join(this.BACKUP_DIR, filename);
 
             fs.writeFileSync(
@@ -73,7 +73,7 @@ export class BackupService {
             );
 
             // store a record
-            const storageLink = 'file://${filepath}';       // <-- backticks (you can also just store filepath)
+            const storageLink = `file://${filepath}`;       // <-- backticks (you can also just store filepath)
             await this.backupModel.create({
                 backupDate: new Date(),
                 dataType: t,

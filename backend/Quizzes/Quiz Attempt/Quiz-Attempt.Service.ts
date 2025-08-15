@@ -83,7 +83,7 @@ export class QuizAttemptService {
         // Grade each response
         const details = attemptQuizDto.responses.map(r => {
             const q = quiz.questions.find(qq => qq.questionId === r.questionId);
-           ; if (!q) throw new NotFoundException('Question not found: ${r.questionId}')
+           ; if (!q) throw new NotFoundException(`Question not found: ${r.questionId}`)
             const isCorrect = q.correctAnswer === r.selectedAnswer;
             return {
                 questionId: r.questionId,

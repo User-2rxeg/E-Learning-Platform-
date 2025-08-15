@@ -33,7 +33,7 @@ async function main() {
             role: UserRole.ADMIN,
             isEmailVerified: true,
         });
-        console.log('Created admin: ${ADMIN_EMAIL}');
+        console.log(`Created admin: ${ADMIN_EMAIL}`);
     } else {
         const updates: Record<string, any> = {};
         if (existing.role !== UserRole.ADMIN) updates.role = UserRole.ADMIN;
@@ -49,7 +49,7 @@ async function main() {
 
         if (Object.keys(updates).length) {
             await UserModel.updateOne({ _id: existing._id }, { $set: updates }).exec();
-            console.log(  'Updated admin: ${ADMIN_EMAIL}');
+            console.log(  `Updated admin: ${ADMIN_EMAIL}`);
         } else {
             console.log('Admin already exists and is up to date: ${ADMIN_EMAIL}');
         }

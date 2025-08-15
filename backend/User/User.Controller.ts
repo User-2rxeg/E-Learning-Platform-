@@ -49,10 +49,13 @@ export class UserController {
     @Get('search')
     async searchUsers(
         @Query('q') q?: string,
-        @Query('role') role?: UserRole, // optional; e.g., 'student'
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
-        @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number = 20,
+        @Query('role') roleStr?: string,
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+        @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit = 20,
     ) {
+        const role = roleStr && Object.values(UserRole).includes(roleStr as UserRole)
+            ? (roleStr as UserRole)
+            : undefined;
         return this.userService.searchUsers({ q, role, page, limit });
     }
 

@@ -20,6 +20,6 @@ export class NotificationAuditLog {
 
 export const NotificationAuditLogSchema = SchemaFactory.createForClass(NotificationAuditLog);
 
-//NotificationAuditLogSchema.index({ notificationId: 1, eventType: 1, timestamp: -1 });
-//NotificationAuditLogSchema.index({ userId: 1, eventType: 1, timestamp: -1 });
-//NotificationAuditLogSchema.index({ timestamp:-1});
+NotificationAuditLogSchema.index({ notificationId: 1, eventType: 1, timestamp: -1 });
+NotificationAuditLogSchema.index({ userId: 1, eventType: 1, timestamp: -1 });
+NotificationAuditLogSchema.index({ timestamp:-1});

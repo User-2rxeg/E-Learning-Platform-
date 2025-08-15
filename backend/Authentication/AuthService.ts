@@ -23,22 +23,78 @@ export class AuthService {
     constructor(
         private readonly userService: UserService,
         private readonly jwtService: JwtService,
-        @InjectModel('BlacklistedToken') private readonly blacklistModel: Model<BlacklistedTokenDocument>,
+        @InjectModel(BlacklistedToken.name) private readonly blacklistModel: Model<BlacklistedTokenDocument>,
         private readonly audit:AuditLogService,
     ) {}
 
 
 
-    async register(registerDto: any): Promise<any> {
-        const existingUser = await this.userService.findByEmail(registerDto.email);
-        if (existingUser) {
+    //async register(registerDto: any): Promise<any> {
+      //  const existingUser = await this.userService.findByEmail(registerDto.email);
+        //if (existingUser) {
+        //    throw new UnauthorizedException('Email already in use');
+        //}
+
+        // Reuse the UserService to create the user
+        //return this.userService.create(registerDto);
+    //}
+// AuthService.register
+    // AuthService.ts
+    async register(registerDto: any) {
+        // 1) email must be unique
+        const existing = await this.userService.findByEmail(registerDto.email);
+        if (existing) {
             throw new UnauthorizedException('Email already in use');
         }
 
-        // Reuse the UserService to create the user
-        return this.userService.create(registerDto);
-    }
+        // 2) create user with isEmailVerified=false (and let UserService hash password)
+        const newUser = await this.userService.create({
+            ...registerDto,
+            isEmailVerified: false,
+            otpCode: null,
+            otpExpiresAt: null,
+        });
 
+        // 3) issue OTP (valid for 10 minutes) and persist on the user
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+        await this.userService.updateUser(String(newUser._id), { otpCode, otpExpiresAt });
+
+        // 4) send email (using your env-configured SMTP)
+        try {
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: Number(process.env.SMTP_PORT),
+                secure: process.env.SMTP_SECURE === 'true', // true:465, false:587
+                auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+            });
+
+            const fromName = process.env.EMAIL_FROM_NAME ?? 'E-Learning Platform';
+            const smtpUser = process.env.SMTP_USER ?? '';
+            const from = `"${fromName}" <${smtpUser}>`;
+
+            await transporter.sendMail({
+                from,
+                to: newUser.email,
+                subject: 'Verify your email (OTP)',
+                text: `Your OTP Code is: ${otpCode}. It expires in 10 minutes.`,
+        });
+        } catch (e) {
+            // Don’t fail registration if email sending hiccups; user can /auth/resend-otp
+            await this.audit.log('REGISTER_EMAIL_SEND_FAIL', String(newUser._id), {
+                email: newUser.email,
+                reason: (e as Error)?.message,
+            });
+        }
+
+        // 5) audit & respond
+        await this.audit.log('REGISTER', String(newUser._id), { email: newUser.email });
+        return {
+            message: 'Registered. Please verify your email via the OTP we sent.',
+            userId: String(newUser._id),
+        };
+    }
 
     async validateUser(email: string, plainPassword: string): Promise<any> {
         const user = await this.userService.findByEmail(email);
@@ -78,14 +134,14 @@ export class AuthService {
         //};
     //}
 
-    async login(email: string, plainPassword: string): Promise<{
-        access_token?: string;
-        refresh_token?: string;
-        user?: any;
-        mfaRequired?: boolean;
-        tempToken?: string;
-    }> {
+    // AuthService.login
+    async login(email: string, plainPassword: string) {
         const user = await this.validateUser(email, plainPassword);
+
+        if (!user.isEmailVerified) {
+            // optionally send a fresh OTP here
+            throw new UnauthorizedException('Email not verified. Please verify your email first.');
+        }
 
         if (user.mfaEnabled) {
             const tempToken = await this.issueTempMfaToken(user);
@@ -93,9 +149,9 @@ export class AuthService {
         }
 
         const payload = { sub: user._id.toString(), email: user.email, role: user.role };
-        const access_token = await this.jwtService.signAsync(payload, { expiresIn: '1h' });
+        const access_token  = await this.jwtService.signAsync(payload, { expiresIn: '1h' });
         const refresh_token = await this.jwtService.signAsync(payload, { expiresIn: '7d' });
-await this.audit.log('LOGIN SUCCESSFUL', user._id.toString(), {email: user.email, role: user.role});
+        await this.audit.log('LOGIN SUCCESSFUL', user._id.toString(), { email: user.email, role: user.role });
         return { access_token, refresh_token, user };
     }
 
@@ -318,7 +374,7 @@ await this.audit.log('LOGIN SUCCESSFUL', user._id.toString(), {email: user.email
     // in AuthService
     async enableMfa(userId: string) {
         const secret = speakeasy.generateSecret({
-                name: 'E-Learning Platform (${userId})', // <-- fix: backticks
+                name:` E-Learning Platform (${userId})`, // <-- fix: backticks
             });
         const backupCodes = this.generateBackupCodes();
         await this.userService.updateUser(userId, {
