@@ -1,29 +1,33 @@
-// Chat.ts
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
-const CompatProp: any = Prop;
+export type ChatDocument = HydratedDocument<Chat>;
 
 @Schema({ timestamps: true })
-export class Chat extends Document {
-    @CompatProp({ type: [Types.ObjectId], ref: 'User', required: true })
-    participants: Types.ObjectId[];
+export class Chat {
+    @Prop({ type: [Types.ObjectId], ref: 'User', required: true })
+    participants!: Types.ObjectId[];
 
-    @CompatProp([{
-        sender: { type: Types.ObjectId, ref: 'User', required: true },
-        content: { type: String, required: true },
-        timestamp: { type: Date, default: Date.now },
-        read: { type: Boolean, default: false }
-    }])
-    messages: any[];
+    @Prop({
+        type: [
+            {
+                sender: { type: Types.ObjectId, ref: 'User', required: true },
+                content: { type: String, required: true },
+                timestamp: { type: Date, default: Date.now },
+                read: { type: Boolean, default: false },
+            },
+        ],
+        default: [],
+    })
+    messages!: any[];
 
-    @CompatProp({ type: Boolean, default: false })
-    isGroup: boolean;
+    @Prop({ type: Boolean, default: false })
+    isGroup: boolean = false;
 
-    @CompatProp({ type: String })
+    @Prop({ type: String })
     groupName?: string;
 
-    @CompatProp({ type: Types.ObjectId, ref: 'Course' })
+    @Prop({ type: Types.ObjectId, ref: 'Course' })
     courseId?: Types.ObjectId;
 }
 

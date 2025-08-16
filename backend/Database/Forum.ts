@@ -1,26 +1,61 @@
-// Forum.ts
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import {HydratedDocument, Types} from 'mongoose';
 
-const CompatProp: any = Prop;
+export type PostDocument = HydratedDocument<Post>;
+
+@Schema()
+export class Post {
+
+    @Prop({ required: true })
+    content!: string;
+
+    @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+    author!: Types.ObjectId;
+
+    @Prop({ type: Date, default: Date.now })
+    timestamp!: Date;
+
+    @Prop({ type: [Types.ObjectId], ref: 'User', default: [] })
+    likes!: Types.ObjectId[];
+}
+
+export const PostSchema = SchemaFactory.createForClass(Post);
+
+export type ThreadDocument = HydratedDocument<Thread>;
+
+@Schema()
+export class Thread {
+    @Prop({ required: true })
+    title!: string;
+
+    @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+    createdBy!: Types.ObjectId;
+
+    @Prop({ type: Date, default: Date.now })
+    createdAt!: Date;
+
+    @Prop({ type: [PostSchema], default: [] })
+    posts!: Types.DocumentArray<Post>;
+}
+
+export const ThreadSchema = SchemaFactory.createForClass(Thread);
+
+
+
+
+
+
+export type ForumDocument = HydratedDocument<Forum>;
 
 @Schema({ timestamps: true })
-export class Forum extends Document {
-    @CompatProp({ type: Types.ObjectId, ref: 'Course', required: true })
-    courseId: Types.ObjectId;
+export class Forum {
+    @Prop({ type: Types.ObjectId, ref: 'Course', required: true })
+    courseId!: Types.ObjectId;
 
-    @CompatProp([{
-        title: { type: String, required: true },
-        createdBy: { type: Types.ObjectId, ref: 'User', required: true },
-        createdAt: { type: Date, default: Date.now },
-        posts: [{
-            content: { type: String, required: true },
-            author: { type: Types.ObjectId, ref: 'User', required: true },
-            timestamp: { type: Date, default: Date.now },
-            likes: { type: [Types.ObjectId], ref: 'User', default: [] }
-        }]
-    }])
-    threads: any[];
+    @Prop({ type: [ThreadSchema], default: [] })
+    threads!: Types.DocumentArray<Thread>;
 }
 
 export const ForumSchema = SchemaFactory.createForClass(Forum);
+
+

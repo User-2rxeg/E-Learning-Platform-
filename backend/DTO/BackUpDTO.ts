@@ -1,18 +1,17 @@
-// BackupDto.ts
-import { IsString, IsDate } from 'class-validator';
+// src/DTO/BackUpDTO.ts
+import { IsString, IsIn, IsOptional } from 'class-validator';
 
-const CompatIsString: any = IsString;
-const CompatIsDate: any = IsDate;
-
-export class CreateBackupDto {
-    @CompatIsDate()
-    backupDate: Date;
-
-    @CompatIsString()
-    dataType: string;
-
-    @CompatIsString()
-    storageLink: string;
+export class RunBackupDTO {
+    @IsString()
+    @IsIn(['users', 'courses', 'performances', 'all'])
+    dataType!: 'users' | 'courses' | 'performances' | 'all';
 }
 
-export class UpdateBackupDto extends CreateBackupDto {}
+export class UpdateBackupDTO {
+    @IsOptional() @IsString()
+    storageLink?: string;
+
+    @IsOptional()
+    @IsIn(['users', 'courses', 'performances', 'all'])
+    dataType?: 'users' | 'courses' | 'performances' | 'all';
+}
