@@ -239,7 +239,7 @@ export class AuthService {
         });
     }
 
-    async verifyOTP(email: string, otpCode: string): Promise<void> {
+    async verifyOTP(email: string, otpCode: string) {
         const user = await this.userService.findByEmail(email);
         if (!user) throw new NotFoundException('User not found');
 
@@ -247,8 +247,17 @@ export class AuthService {
             throw new UnauthorizedException('Invalid or expired OTP');
         }
 
+        await this.userService.updateUser(user._id.toString(), {
+            isEmailVerified: true,
+            otpCode: null,
+            otpExpiresAt: null
+        });
 
-        await this.userService.updateUser(user._id.toString(), { isEmailVerified: true, otpCode: null, otpExpiresAt: null });
+        // Generate and return a token
+        const payload = { sub: user._id.toString(), email: user.email, role: user.role };
+        const token = this.jwtService.sign(payload);
+
+        return { token, user: { id: user._id, email: user.email, role: user.role } };
     }
 
 
@@ -364,7 +373,7 @@ export class AuthService {
     }
 
     private async issueTempMfaToken(user: { _id: string; email: string; role: string }) {
-        // short-lived token used only to verify MFA
+        // short-lived token used only to verify mfa
         return this.jwtService.sign(
             { sub: user._id.toString(), email: user.email, role: user.role, mfa: true },
             { expiresIn: '5m' },
@@ -387,7 +396,7 @@ export class AuthService {
 
     async verifyMfaSetup(userId: string, token: string) {
         const user = await this.userService.findByIdSelectSecret(userId);
-        if (!user?.mfaSecret) throw new UnauthorizedException('Setup MFA first');
+        if (!user?.mfaSecret) throw new UnauthorizedException('Setup mfa first');
         const ok = speakeasy.totp.verify({
             secret: user.mfaSecret,
             encoding: 'base32',
@@ -402,7 +411,7 @@ export class AuthService {
     async verifyLoginWithMfa(userId: string, input: { token?: string; backup?: string }) {
         const user = await this.userService.findByIdSelectSecret(userId);
         if (!user?.mfaSecret || !user.mfaEnabled) {
-            throw new UnauthorizedException('MFA not enabled');
+            throw new UnauthorizedException('mfa not enabled');
         }
 
         let ok = false;
@@ -418,7 +427,7 @@ export class AuthService {
             ok = await this.userService.consumeBackupCode(userId, input.backup);
         }
 
-        if (!ok) throw new UnauthorizedException('Invalid MFA');
+        if (!ok) throw new UnauthorizedException('Invalid mfa');
 
         const payload = { sub: user._id.toString(), email: user.email, role: user.role };
         const access_token = await this.jwtService.signAsync(payload, { expiresIn: '1h' });

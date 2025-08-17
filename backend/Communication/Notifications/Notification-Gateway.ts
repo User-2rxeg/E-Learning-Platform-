@@ -23,7 +23,7 @@ export class NotificationGateway implements OnGatewayConnection {
             const userId = payload?.sub;
             if (!userId) return client.disconnect();
 
-            client.join('user:${userId}');
+            client.join(`user:${userId}`);
             (client as any).userId = userId;
         } catch {
             client.disconnect();
@@ -31,6 +31,6 @@ export class NotificationGateway implements OnGatewayConnection {
     }
 
     emitToUser(userId: string, event: string, data: any) {
-        this.server.to('user:${userId}).emit(event, data');
+        this.server.to(`user:${userId}).emit(event, data`);
     }
 }

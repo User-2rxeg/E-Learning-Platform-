@@ -26,7 +26,7 @@ export class UserController {
     constructor(private readonly userService: UserService) {}
 
 
-    // Protected route: Get user by ID
+    // protected route: Get user by ID
     @UseGuards(JwtAuthGuard)
     @Get(':id')
     async getUser(@Param('id') id: string) {

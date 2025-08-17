@@ -13,9 +13,18 @@ export class QuizService {
     ) {}
 
     async create(createQuizDto: CreateQuizDto): Promise<Quiz> {
-        const quiz = new this.quizModel(createQuizDto);
+        const questions = (createQuizDto.questions || []).map(q => ({
+            ...q,
+            questionId: q.questionId ?? new Types.ObjectId().toString(),
+        }));
+
+        const quiz = new this.quizModel({
+            ...createQuizDto,
+            questions,
+        });
         return await quiz.save();
     }
+
 
     async findAll(): Promise<Quiz[]> {
         return this.quizModel.find().populate('createdBy', 'name email').exec();
@@ -30,10 +39,22 @@ export class QuizService {
     async update(id: string, updateQuizDto: UpdateQuizDto, userId: string): Promise<Quiz> {
         const quiz = await this.quizModel.findById(id).exec();
         if (!quiz) throw new NotFoundException('Quiz not found');
-        if (!quiz.createdBy.equals(userId)) throw new ForbiddenException('Unauthorized');
 
-        Object.assign(quiz, updateQuizDto);
-        return await quiz.save();
+        // if createdBy is an ObjectId, compare properly
+        if (!quiz.createdBy?.equals?.(new Types.ObjectId(userId))) {
+            throw new ForbiddenException('Unauthorized');
+        }
+
+        const next: any = { ...updateQuizDto };
+        if (next.questions) {
+            next.questions = next.questions.map((q: any) => ({
+                ...q,
+                questionId: q.questionId ?? new Types.ObjectId().toString(),
+            }));
+        }
+
+        Object.assign(quiz, next);
+        return await quiz.save();
     }
 
     async remove(id: string, userId: string): Promise<void> {

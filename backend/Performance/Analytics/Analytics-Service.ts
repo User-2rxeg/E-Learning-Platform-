@@ -124,24 +124,28 @@ export class AnalyticsService {
         };
     }
 
-    // ---------- Exports ----------
     toCSV(rows: any[]): string {
-        if (!rows || !rows.length) return '';
+        if (!rows || rows.length === 0) return '';
 
-        // Union of keys across all rows (handles missing columns gracefully)
-        const headers = Array.from(new Set(rows.flatMap((r: any) => Object.keys(r ?? {}))));
+        // Union of keys across all rows
+        const headers = Array.from(new Set(rows.flatMap(r => Object.keys(r ?? {}))));
 
         const escapeCell = (val: any): string => {
             if (val === null || val === undefined) return '';
             const s = String(val);
-            // Quote if it has commas, quotes, or newlines; double any embedded quotes
-            return (s.includes(',') || s.includes('"') || s.includes('\n')) ? '"${s.replace()}"': s;
+
+
+            if (/[,"\n]/.test(s)) {
+                // Double any existing quotes
+                return `"${s.replace(/"/g, `""`)}"`;
+        }
+        return s;
     };
 
     const lines: string[] = [];
     lines.push(headers.join(','));
     for (const row of rows) {
-    lines.push(headers.map(h => escapeCell((row as any)[h])).join(','));
+    lines.push(headers.map(h => escapeCell(row[h])).join(','));
 }
 return lines.join('\n');
 }

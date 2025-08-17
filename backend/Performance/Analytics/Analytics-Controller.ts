@@ -100,8 +100,8 @@ async exportInstructorCourse(
     const csv = this.svc.toCSV(rows);
     // Return CSV with headers using decorator
     return new StreamableFile(Buffer.from(csv), {
-        disposition: 'attachment; filename="course-${courseId}-report.csv"',
-        type: 'text/csv',
+        disposition: `attachment; filename="course-${courseId}-report.csv"`,
+        type: `text/csv`,
     });
 }
 }

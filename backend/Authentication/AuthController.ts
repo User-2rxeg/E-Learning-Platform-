@@ -28,7 +28,7 @@ export class AuthController {
         try {
             return await this.authService.register(registerDto);
         } catch (error) {
-            console.error('Register error:', error);
+            console.error('register error:', error);
             throw new InternalServerErrorException('Something went wrong during registration.');
         }
     }
@@ -56,7 +56,7 @@ export class AuthController {
             await this.authService.logout(token);
         }
 
-        return { message: 'Logout successful' };
+        return { message: 'logout successful' };
     }
 
     @UseGuards(JwtAuthGuard)
@@ -71,14 +71,14 @@ export class AuthController {
         await this.authService.sendOTP(email);
         return { message: 'OTP sent to email' };
     }
-@Public()
+    @Public()
     @Post('verify-otp')
-    async verifyOTP(
-        @Body('email') email: string,
-        @Body('otpCode') otpCode: string
-    ) {
-        await this.authService.verifyOTP(email, otpCode);
-        return { message: 'Email verified successfully' };
+    async verifyOTP(@Body('email') email: string, @Body('otp') otpCode: string) {
+        const auth = await this.authService.verifyOTP(email, otpCode);
+        return {
+            message: 'Email verified successfully',
+            ...auth
+        };
     }
 @Public()
     @Post('forgot-password')
@@ -111,14 +111,14 @@ export class AuthController {
 
 
 
-// Start MFA setup: returns otpauth URL + backup codes
+// Start mfa setup: returns otpauth URL + backup codes
 @Post('mfa/setup')
 @UseGuards(JwtAuthGuard)
 async mfaSetup(@CurrentUser() user: JwtPayload) {
     return this.authService.enableMfa(user.sub);
 }
 
-// Verify code once to activate MFA
+// Verify code once to activate mfa
 @Post('mfa/activate')
 @UseGuards(JwtAuthGuard)
 async mfaActivate(@CurrentUser() user: JwtPayload, @Body() body: MfaActivateDto) {
@@ -133,5 +133,16 @@ async mfaVerifyLogin(@CurrentUser() user: JwtPayload, @Body() body: VerifyLoginD
     return this.authService.verifyLoginWithMfa(user.sub, body);
 }
 
+    //@UseGuards(JwtAuthGuard)
+    //@Get('mfa/status')
+    //async mfaStatus(@CurrentUser() user: JwtPayload) {
+      //  return this.authService.getMfaStatus(user.sub);
+    //}
+
+    //@UseGuards(JwtAuthGuard)
+    //@Post('mfa/disable')
+    //async disableMfa(@CurrentUser() user: JwtPayload) {
+     //   return this.authService.disableMfa(user.sub);
+   // }
 
 }

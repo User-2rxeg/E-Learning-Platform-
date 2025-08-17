@@ -151,7 +151,7 @@ export class QuizAttemptService {
             details,                 // per-question feedback
             nextDifficulty,          // 'easy'|'medium'|'hard'
             nextQuestions,           // suggested next items
-            attemptId: attempt._id,  // useful for UI
+            attemptId: attempt._id,  // useful for ui
         };
     }
 

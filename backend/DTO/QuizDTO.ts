@@ -1,6 +1,7 @@
 // QuizDto.ts
 import { IsString, IsBoolean, IsArray, IsMongoId, IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import {PartialType} from "@nestjs/mapped-types";
 
 class QuestionDto {
     @IsString()
@@ -16,6 +17,11 @@ class QuestionDto {
     @IsEnum(['easy', 'medium', 'hard'])
     @IsOptional()
     difficulty?: string;
+
+    @IsString()
+    @IsOptional()
+        questionId?: string
+
 }
 
 export class CreateQuizDto {
@@ -57,4 +63,4 @@ export class AttemptQuizDto {
 }
 
 
-export class UpdateQuizDto extends CreateQuizDto {}
+export class UpdateQuizDto extends PartialType (CreateQuizDto) {}

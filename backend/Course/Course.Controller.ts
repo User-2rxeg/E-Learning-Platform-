@@ -1,19 +1,5 @@
-import {
-    BadRequestException,
-    Body,
-    Controller, DefaultValuePipe,
-    Delete,
-    Get,
-    Param, ParseIntPipe,
-    Patch,
-    Post,
-    Query,
-    Req, UploadedFile,
-    UseGuards, UseInterceptors
-} from '@nestjs/common';
+import {BadRequestException, Body, Controller, DefaultValuePipe, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors} from '@nestjs/common';
 import {CourseService} from './Course.Service';
-
-
 import {CourseDTO, FeedbackDto, ModuleDto, UpdateCourseDto} from '../DTO/CourseDTO';
 import {Throttle} from '@nestjs/throttler';
 import {Request} from 'express';

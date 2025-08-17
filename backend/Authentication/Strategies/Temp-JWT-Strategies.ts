@@ -15,7 +15,7 @@ export class TempJwtStrategy extends PassportStrategy(Strategy, 'temp-jwt') {
     }
 
     async validate(payload: any) {
-        // Only allow tokens that were issued for MFA (payload.mfa === true)
+        // Only allow tokens that were issued for mfa (payload.mfa === true)
         if (!payload?.mfa) return null; // returning null -> 401
         return { sub: payload.sub, email: payload.email, role: payload.role, mfa:true};
     }
