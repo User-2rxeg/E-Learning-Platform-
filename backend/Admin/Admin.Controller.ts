@@ -1,4 +1,4 @@
-// src/Admin/admin.controller.ts
+
 import {Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards} from '@nestjs/common';
 
 import { JwtAuthGuard } from '../Authentication/Guards/AuthGuard';
@@ -59,8 +59,6 @@ export class AdminController {
     updateCourseStatus(@Param('id') id: string, @Body() body: UpdateCourseStatusBodyDto) {
         return this.admin.updateCourseStatus(id, body.status);
     }
-
-    // --- ENROLLMENTS ---
     @Get('enrollments')
     enrollments(
         @Query('q') q?: string,

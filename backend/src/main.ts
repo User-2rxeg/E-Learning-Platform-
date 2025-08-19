@@ -98,7 +98,7 @@ async function bootstrap() {
             res.json({ status: 'ok', message: 'Server is running' });
         });
 
-        const port = process.env.PORT || 3222;
+        const port = process.env.PORT || 3334;
 
         // Explicitly bind to IPv4 only
         await app.listen(port, '127.0.0.1');

@@ -1,4 +1,4 @@
-// src/Admin/admin.service.ts
+
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
@@ -17,7 +17,7 @@ export class AdminService {
         private readonly audit:AuditLogService,
     ) {}
 
-    // ---------- USERS (paginated + filters) ----------
+
     async listUsers(params: { q?: string; role?: UserRole; verified?: 'true'|'false'; page?: number; limit?: number }) {
         const page  = Math.max(1, Number(params.page) || 1);
         const limit = Math.min(100, Math.max(1, Number(params.limit) || 20));
@@ -40,7 +40,6 @@ export class AdminService {
         return { items, total, page, limit, pages: Math.ceil(total/limit) };
     }
 
-    // ---------- COURSES (paginated + filters) ----------
     async listCourses(params: { q?: string; status?: 'active'|'archived'|'draft'; page?: number; limit?: number }) {
         const page  = Math.max(1, Number(params.page) || 1);
         const limit = Math.min(100, Math.max(1, Number(params.limit) || 20));
@@ -62,7 +61,6 @@ export class AdminService {
         return { items, total, page, limit, pages: Math.ceil(total/limit) };
     }
 
-    // ---------- ENROLLMENTS (derived from Course.studentsEnrolled) ----------
     async listEnrollments(params: { q?: string; courseId?: string; userId?: string; page?: number; limit?: number }) {
         const page  = Math.max(1, Number(params.page) || 1);
         const limit = Math.min(100, Math.max(1, Number(params.limit) || 20));
@@ -115,7 +113,6 @@ export class AdminService {
         return { items, total, page, limit, pages: Math.ceil(total/limit) };
     }
 
-    // ---------- COURSE STATUS ----------
     async updateCourseStatus(courseId: string, status: 'active'|'archived'|'draft') {
         const course = await this.courseModel.findById(courseId).exec();
         if (!course) throw new NotFoundException('Course not found');
@@ -127,7 +124,7 @@ export class AdminService {
         return course;
     }
 
-    // ---------- ANNOUNCEMENTS ----------
+
     async announceAll(adminId: string, message: string) {
         // send to all users (chunked to avoid huge fan-out)
         const cursor = this.userModel.find({}, { _id: 1 }).cursor();
@@ -208,7 +205,7 @@ export class AdminService {
         return { deleted: true };
     }
 
-    // (optional) bulk-archive by createdAt threshold
+
     async archiveOutdated(beforeISO: string, adminId: string) {
         const before = new Date(beforeISO);
         const candidates = await this.courseModel
@@ -226,7 +223,6 @@ export class AdminService {
             { $set: { status: 'archived', archivedAt: now } },
         );
 
-        // audit each (keeps logs simple to query)
         await Promise.all(
             candidates.map(c =>
                 this.audit.log('COURSE_ARCHIVE', adminId, {

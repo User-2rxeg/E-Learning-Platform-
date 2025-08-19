@@ -70,21 +70,21 @@ export class CourseController {
         return this.courseService.enrollStudent(courseId, studentId);
     }
 
-    //@Roles(UserRole.STUDENT)
-    //@Post(':id/feedback')
-    //@Throttle(1, 60) // 1 request per minute per IP
-    //async addFeedback(
-    //  @Param('id') courseId: string,
-    //@Body() feedbackDto: FeedbackDto,
-    //@Req() req: Request
-    // ) {
-    // const studentId = (req.user as any).sub;
-    //if (feedbackDto.rating < 1 || feedbackDto.rating > 5) {
-    //  throw new BadRequestException('Rating must be between 1 and 5');
-    //}
-    // await this.courseService.addFeedback(courseId, feedbackDto, studentId);
-    //return { message: 'Feedback added successfully' };
-    //}
+    @Roles(UserRole.STUDENT)
+    @Post(':id/feedback')
+   // @Throttle( 60) // 1 request per minute per IP
+    async addFeedback(
+      @Param('id') courseId: string,
+    @Body() feedbackDto: FeedbackDto,
+    @Req() req: Request
+     ) {
+     const studentId = (req.user as any).sub;
+    if (feedbackDto.rating < 1 || feedbackDto.rating > 5) {
+      throw new BadRequestException('Rating must be between 1 and 5');
+    }
+     await this.courseService.addFeedback(courseId, feedbackDto, studentId);
+    return { message: 'Feedback added successfully' };
+    }
 
 
     @Roles(UserRole.INSTRUCTOR)
@@ -196,6 +196,13 @@ export class CourseController {
             resourceId,
             requester: { sub: user.sub, role: user.role as UserRole },
         });
+    }
+    // Add to CourseController
+    @Get('enrolled')
+    @Roles(UserRole.STUDENT)
+    async getEnrolledCourses(@CurrentUser() user: JwtPayload) {
+        const studentId = user.sub;
+        return this.courseService.getEnrolledCourses(studentId);
     }
 }
 

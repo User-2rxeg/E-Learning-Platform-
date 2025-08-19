@@ -1,4 +1,4 @@
-// src/auth/AuthDTO/RegisterDTO.ts
+
 
 import { IsString, IsEmail, IsOptional, IsEnum, IsArray } from 'class-validator';
 import { UserRole } from '../../Database/User';

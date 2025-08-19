@@ -57,6 +57,11 @@ export class User {
     @Prop({ type: Date, required: false })
     otpExpiresAt?: Date | null;
 
+    @Prop({ type: String, required: false })
+    passwordResetOtpCode?: String | null;
+
+    @Prop({ type: Date, required: false })
+    passwordResetOtpExpiresAt?: Date | null;
     // add/adjust these props
     @Prop({ default: false })
     mfaEnabled?: boolean;
@@ -92,7 +97,7 @@ export const UserSchema = SchemaFactory.createForClass(User);
 
 UserSchema.index({ email: 1 }, { unique: true });         // explicit unique
 UserSchema.index({ name: 1 });                            // prefix search on name
-UserSchema.index({ email: 1, name: 1 });                  // compound to help mixed filters
+//UserSchema.index({ email: 1, name: 1 });                  // compound to help mixed filters
 
  UserSchema.index({ name: 'text', email: 'text' });
 

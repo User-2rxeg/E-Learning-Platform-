@@ -13,7 +13,8 @@ import { BlacklistedToken, BlacklistedTokenSchema } from '../Database/Blackliste
 import { UserModule } from '../User/User.Module';
 import {TempJwtGuard} from "./Guards/Temp-JWT-Guard";
 import {TempJwtStrategy} from "./Strategies/Temp-JWT-Strategies";
-import {JwtStrategy} from "./Strategies/JWT.Strategies"; // <-- exact path & casing
+import {JwtStrategy} from "./Strategies/JWT.Strategies";
+import {MailModule} from "../Mail Test/mail.module";
 
 @Module({
     imports: [
@@ -29,7 +30,8 @@ import {JwtStrategy} from "./Strategies/JWT.Strategies"; // <-- exact path & cas
         MongooseModule.forFeature([
             { name: BlacklistedToken.name, schema: BlacklistedTokenSchema },
         ]),
-        forwardRef(() => UserModule), // <-- nothing else in imports!
+        forwardRef(() => UserModule),
+        MailModule,// <-- nothing else in imports!
     ],
     controllers: [AuthController],
     providers: [AuthService, JwtStrategy, TempJwtStrategy, TempJwtGuard],

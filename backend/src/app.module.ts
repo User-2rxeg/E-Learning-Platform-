@@ -21,6 +21,7 @@ import {AdminModule} from "../Admin/Admin.Module";
 import {AnalyticsModule} from "../Performance/Analytics/Analytics-Module";
 import {ChatModule} from "../Communication/Chats/Chat-Module";
 import { ScheduleModule } from '@nestjs/schedule';
+import {MailModule} from "../Mail Test/mail.module";
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
@@ -45,6 +46,7 @@ useFactory: async (configService: ConfigService) => ({
         AdminModule,
         AnalyticsModule,
         ChatModule,
+        MailModule,
     ],
     providers: [
        { provide: APP_GUARD, useClass: JwtAuthGuard }, // global JWT guard

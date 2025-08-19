@@ -111,22 +111,19 @@ export class AuthController {
 
 
 
-// Start mfa setup: returns otpauth URL + backup codes
 @Post('mfa/setup')
 @UseGuards(JwtAuthGuard)
 async mfaSetup(@CurrentUser() user: JwtPayload) {
     return this.authService.enableMfa(user.sub);
 }
 
-// Verify code once to activate mfa
 @Post('mfa/activate')
 @UseGuards(JwtAuthGuard)
 async mfaActivate(@CurrentUser() user: JwtPayload, @Body() body: MfaActivateDto) {
     return this.authService.verifyMfaSetup(user.sub, body.token);
 }
 
-// After login returned { mfaRequired: true, tempToken }, call this with
-// Authorization: Bearer <tempToken> and either token or backup
+
 @Post('mfa/verify-login')
 @UseGuards(TempJwtGuard)
 async mfaVerifyLogin(@CurrentUser() user: JwtPayload, @Body() body: VerifyLoginDto) {

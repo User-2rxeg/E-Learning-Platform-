@@ -1,28 +1,23 @@
-import {Body, Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Post, Query} from '@nestjs/common';
-
-import { CreateChatDto } from '../../DTO/ChatDTO';
-import { Roles } from '../../Authentication/Decorators/Roles-Decorator';
-import { UserRole } from '../../Database/User';
+import { Body, Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../Authentication/Guards/AuthGuard';
 import { RolesGuard } from '../../Authentication/Guards/RolesGuard';
-import { UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../Authentication/Decorators/Current-User';
 import { JwtPayload } from '../../Authentication/Interfaces/JWT-Payload.Interface';
-import {ChatService} from "./Chat-Service";
+import { CreateChatDto } from '../../DTO/ChatDTO';
+import { ChatService } from './Chat-Service';
 
 @Controller('chat')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ChatController {
     constructor(private readonly svc: ChatService) {}
 
-    // anyone authenticated can create chat (student/instructor/admin)
     @Post('rooms')
-    async createRoom(@Body() dto: CreateChatDto, @CurrentUser() me: JwtPayload) {
+    createRoom(@Body() dto: CreateChatDto, @CurrentUser() me: JwtPayload) {
         return this.svc.createChat(dto, me.sub);
     }
 
     @Get('rooms')
-    async myRooms(
+    myRooms(
         @CurrentUser() me: JwtPayload,
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
         @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
@@ -31,37 +26,36 @@ export class ChatController {
     }
 
     @Get(':chatId/history')
-    async history(
+    history(
         @Param('chatId') chatId: string,
         @CurrentUser() me: JwtPayload,
-        @Query('page') page = '1',
-        @Query('limit') limit = '20',
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+        @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
     ) {
-        return this.svc.history(chatId, me.sub, { page: parseInt(page), limit: parseInt(limit) });
+        return this.svc.history(chatId, me.sub, { page, limit });
     }
 
     @Post(':chatId/messages')
-    async sendMessage(
+    sendMessage(
         @Param('chatId') chatId: string,
         @Body('content') content: string,
+        @Body('attachmentUrl') attachmentUrl: string | undefined,
         @CurrentUser() me: JwtPayload,
     ) {
-        return this.svc.sendMessage(chatId, me.sub, content);
+        return this.svc.sendMessage(chatId, me.sub, content, attachmentUrl);
     }
 
-    // controller
     @Post(':chatId/read')
-    async markRead(
+    markRead(
         @Param('chatId') chatId: string,
-        @Body('messageIds') messageIds: string[] | undefined,
+        @Body('upToMessageId') upToMessageId: string | undefined,
         @CurrentUser() me: JwtPayload,
     ) {
-        return this.svc.markRead(chatId, me.sub, messageIds);
+        return this.svc.markRead(chatId, me.sub, upToMessageId);
     }
 
-    // controller
     @Post('dm/:otherUserId')
-    async getOrCreateDM(@Param('otherUserId') other: string, @CurrentUser() me: JwtPayload) {
+    getOrCreateDM(@Param('otherUserId') other: string, @CurrentUser() me: JwtPayload) {
         return this.svc.getOrCreateDirect(me.sub, other);
     }
 }

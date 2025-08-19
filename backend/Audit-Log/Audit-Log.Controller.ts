@@ -1,4 +1,4 @@
-// src/AuditLog/AuditLog.Controller.ts
+
 import {
     Controller, Get, Post, Patch, Delete,
     Param, Body, Query, UseGuards, ParseIntPipe

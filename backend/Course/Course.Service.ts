@@ -372,4 +372,42 @@ export class CourseService {
             url: removed?.url,
         };
     }
+    async findByInstructor(instructorId: string) {
+        return this.courseModel.find({
+            instructorId: new Types.ObjectId(instructorId)
+        }).lean().exec();
+    }
+
+
+
+    async listModuleResources(courseId: string, moduleIndex: number) {
+        const course = await this.courseModel.findById(courseId);
+        if (!course) throw new NotFoundException('Course not found');
+
+        if (moduleIndex < 0 || moduleIndex >= course.modules.length) {
+            throw new BadRequestException('Invalid module index');
+        }
+
+        return {
+            resources: course.modules[moduleIndex].resources || []
+        };
+    }
+    async getEnrolledCourses(studentId: string) {
+        const courses = await this.courseModel.find({
+            studentsEnrolled: { $elemMatch: { $eq: new Types.ObjectId(studentId) } }
+        })
+            .populate('instructorId', 'name')
+            .lean()
+            .exec();
+
+        // Add progress information
+        const coursesWithProgress = await Promise.all(courses.map(async course => {
+            // You could get this from your Performance collection if available
+            return {
+                ...course,
+                progress: 0 // Replace with actual progress if you have it
+            };
+        }));
+
+        return coursesWithProgress;}
 }

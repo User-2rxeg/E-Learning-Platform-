@@ -15,6 +15,10 @@ class MessageDto {
 
     @IsString()
     content!: string;
+
+    @IsOptional()
+    @IsString()
+    attachementURl?: string;
 }
 
 export class CreateChatDto {

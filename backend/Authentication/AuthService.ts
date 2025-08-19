@@ -16,6 +16,9 @@ import * as crypto from 'crypto';
 import nodemailer from 'nodemailer';
 import { config } from 'dotenv';
 import {AuditLogService} from "../Audit-Log/Audit-Log.Service";
+import {MailService} from "../Mail Test/mail.service";
+import {from} from "rxjs";
+
 config();
 
 @Injectable()
@@ -25,6 +28,7 @@ export class AuthService {
         private readonly jwtService: JwtService,
         @InjectModel(BlacklistedToken.name) private readonly blacklistModel: Model<BlacklistedTokenDocument>,
         private readonly audit:AuditLogService,
+        private readonly mailService: MailService,
     ) {}
 
 
@@ -204,40 +208,6 @@ export class AuthService {
         return this.userService.findById(userId);
     }
 
-    async sendOTP(email: string): Promise<void> {
-        const user = await this.userService.findByEmail(email);
-        if (!user) throw new NotFoundException('User not found');
-
-        const otpCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins expiry
-
-        await this.userService.updateUser(user._id.toString(), { otpCode, otpExpiresAt });
-
-        // Send Email (Gmail SMTP)
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT),
-            secure: process.env.SMTP_SECURE === 'true',
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-        });
-        await  transporter.verify();
-
-        const fromName = process.env.EMAIL_FROM_NAME ?? 'E-Learning Platform';
-        const smtpUser = process.env.SMTP_USER ?? '';
-
-        const from = '"' + fromName + '" <' + smtpUser + '>';
-
-        await transporter.sendMail({
-            from,
-            to: email,
-            subject: 'Your OTP Code',
-            text: 'Your OTP Code is: ' + otpCode,
-
-        });
-    }
 
     async verifyOTP(email: string, otpCode: string) {
         const user = await this.userService.findByEmail(email);
@@ -261,39 +231,97 @@ export class AuthService {
     }
 
 
-    async forgotPassword(email: string): Promise<void> {
+
+
+    private async generateAndSendOTP(
+        email: string,
+        purpose: 'verification' | 'password-reset' | 'login',
+        rateLimit = true
+    ): Promise<void> {
         const user = await this.userService.findByEmail(email);
         if (!user) throw new NotFoundException('User not found');
+
+
+        let lastOtpTime = user.otpExpiresAt || null;
+        if (rateLimit && lastOtpTime && (new Date().getTime() - lastOtpTime.getTime()) < 2 * 60 * 1000) {
+            throw new BadRequestException('Please wait before requesting a new OTP');
+        }
 
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
         const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-        await this.userService.updateUser(user._id.toString(), { otpCode, otpExpiresAt });
-
-        // Send Email
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT),
-            secure: process.env.SMTP_SECURE === 'true', // true:465, false:587
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
+        // Store OTP in standard fields
+        await this.userService.updateUser(user._id.toString(), {
+            otpCode,
+            otpExpiresAt
         });
 
-        const fromName = process.env.EMAIL_FROM_NAME ?? 'E-Learning Platform';
-        const smtpUser = process.env.SMTP_USER ?? '';
+        // Email content based on purpose
+        let subject = 'Your OTP Code';
+        let text = `Your OTP Code is: ${otpCode}`;
+        if (purpose === 'verification') {
+            subject = 'Verify Your Email Address';
+            text = `Your email verification code is: ${otpCode}\n\nThis code will expire in 10 minutes.`;
+        } else if (purpose === 'password-reset') {
+            subject = 'Reset Your Password';
+            text = `Your password reset code is: ${otpCode}\n\nThis code will expire in 10 minutes. If you did not request a password reset, please ignore this email.`;
+        } else if (purpose === 'login') {
+            subject = 'Login Verification Code';
+            text = `Your login verification code is: ${otpCode}\n\nThis code will expire in 10 minutes.`;
+        }
 
-        const from = '"' + fromName + '" <' + smtpUser + '>';  // no template literals
+        try {
 
-        await transporter.sendMail({
-            from,
-            to: email,
-            subject: 'Your OTP Code',
-            text: 'Your OTP Code is: ' + otpCode,
+            const testAccount = await nodemailer.createTestAccount();
 
-        });
+
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.ethereal.email',
+                port: 587,
+                secure: false,
+                auth: {
+                    user: testAccount.user,
+                    pass: testAccount.pass
+                }
+            });
+
+            const mailOptions = {
+                from: '"E-Learning Platform" <no-reply@elearning.com>',
+                to: email,
+                subject,
+                text
+            };
+
+            const info = await transporter.sendMail(mailOptions);
+            console.log(`OTP email sent successfully to ${email}`);
+            console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+
+
+            console.log(`Development OTP for ${email}: ${otpCode}`);
+        } catch (error) {
+            console.error(`Failed to send OTP email to ${email}:`, error);
+
+            // For development, still log the OTP but throw a friendly error
+            console.log(`Development OTP for ${email}: ${otpCode}`);
+            throw new BadRequestException('Email service unavailable. Check console for OTP (development only).');
+        }
     }
+
+
+    async sendOTP(email: string): Promise<void> {
+        await this.generateAndSendOTP(email, 'verification', false);
+    }
+
+    async resendOTP(email: string): Promise<void> {
+        await this.generateAndSendOTP(email, 'verification', true);
+    }
+
+    async forgotPassword(email: string): Promise<void> {
+       await this.generateAndSendOTP(email, 'password-reset', false);
+    }
+
+
+
 
     async resetPassword(email: string, otpCode: string, newPassword: string): Promise<void> {
         const user = await this.userService.findByEmail(email);
@@ -312,44 +340,9 @@ export class AuthService {
         });
     }
 
-    async resendOTP(email: string): Promise<void> {
-        const user = await this.userService.findByEmail(email);
-        if (!user) throw new NotFoundException('User not found');
 
 
-        if (user.otpExpiresAt && (new Date().getTime() - user.otpExpiresAt.getTime()) < 2 * 60 * 1000) {
-            throw new BadRequestException('Please wait before requesting a new OTP');
-        }
 
-        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min expiry
-
-        await this.userService.updateUser(user._id.toString(), { otpCode, otpExpiresAt });
-
-
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT),
-            secure: process.env.SMTP_SECURE === 'true', // true:465, false:587
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-        });
-
-        const fromName = process.env.EMAIL_FROM_NAME ?? 'E-Learning Platform';
-        const smtpUser = process.env.SMTP_USER ?? '';
-
-        const from = '"' + fromName + '" <' + smtpUser + '>';  // no template literals
-
-        await transporter.sendMail({
-            from,
-            to: email,
-            subject: 'Your OTP Code',
-            text: 'Your OTP Code is: ' + otpCode,
-
-        });
-    }
 
     async checkOTPStatus(email: string): Promise<{ valid: boolean, expiresAt?: Date }> {
         const user = await this.userService.findByEmail(email);
@@ -380,7 +373,7 @@ export class AuthService {
         );
     }
 
-    // in AuthService
+
     async enableMfa(userId: string) {
         const secret = speakeasy.generateSecret({
                 name:` E-Learning Platform (${userId})`, // <-- fix: backticks

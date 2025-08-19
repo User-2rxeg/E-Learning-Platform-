@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 
 export type NotificationDocument = HydratedDocument<Notification>;
-
+export type NotificationType = 'courseUpdate' | 'assignmentDue' | 'newMessage' | 'systemAlert' | 'other';
 @Schema({ timestamps: true })
 export class Notification {
     @Prop({ type: Types.ObjectId, ref: 'User', required: true })
@@ -17,8 +17,6 @@ export class Notification {
     @Prop({ type: Boolean, default: false })
     read: boolean = false;
 
-    @Prop({ type: Date, default: Date.now })
-    createdAt: Date = new Date();
 
     @Prop({ type: Types.ObjectId, ref: 'Course', required: false })
     courseId?: Types.ObjectId;

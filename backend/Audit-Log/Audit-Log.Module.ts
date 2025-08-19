@@ -1,4 +1,4 @@
-// src/Audit/AuditLog.Module.ts
+
 import {Global, Module} from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuditLog, AuditLogSchema } from '../Database/AuditLog';

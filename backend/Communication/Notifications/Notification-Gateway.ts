@@ -10,17 +10,13 @@ export class NotificationGateway implements OnGatewayConnection {
 
     async handleConnection(client: Socket) {
         try {
-            // Accept token via auth or Authorization header
             const token =
-                (client.handshake.auth && (client.handshake.auth as any).token) ||
-                (client.handshake.headers.authorization
-                    ? (client.handshake.headers.authorization as string).split(' ')[1]
-                    : undefined);
+                (client.handshake.auth as any)?.token ||
+                (client.handshake.headers.authorization?.toString().split(' ')[1]);
 
             if (!token) return client.disconnect();
-
-            const payload = this.jwt.verify(token);
-            const userId = payload?.sub;
+            const payload = this.jwt.verify(token); // Ensure JwtModule.register({ secret }) configured
+            const userId = payload?.sub as string;
             if (!userId) return client.disconnect();
 
             client.join(`user:${userId}`);
@@ -31,6 +27,6 @@ export class NotificationGateway implements OnGatewayConnection {
     }
 
     emitToUser(userId: string, event: string, data: any) {
-        this.server.to(`user:${userId}).emit(event, data`);
+        this.server.to(`user:${userId}`).emit(event, data);
     }
 }

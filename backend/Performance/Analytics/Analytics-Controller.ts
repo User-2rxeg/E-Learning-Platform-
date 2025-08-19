@@ -103,5 +103,15 @@ async exportInstructorCourse(
         disposition: `attachment; filename="course-${courseId}-report.csv"`,
         type: `text/csv`,
     });
-}
+
+
+
+    }
+    @Roles(UserRole.INSTRUCTOR, UserRole.ADMIN)
+    @Get('instructor/:instructorId/dashboard')
+    async instructorDashboard(@Param('instructorId') instructorId: string) {
+        return this.svc.getInstructorDashboard(instructorId);
+    }
+
+
 }

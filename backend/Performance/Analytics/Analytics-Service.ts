@@ -150,4 +150,41 @@ export class AnalyticsService {
 return lines.join('\n');
 }
 
+// Add to AnalyticsService
+    async getInstructorDashboard(instructorId: string) {
+        const iid = new Types.ObjectId(instructorId);
+
+        // Get all courses by this instructor
+        const courses = await this.courses.find({ instructorId: iid }).lean().exec();
+
+        // Calculate total unique students
+        const allStudentIds = new Set();
+        courses.forEach(course => {
+            (course.studentsEnrolled || []).forEach(id => allStudentIds.add(id.toString()));
+        });
+
+        // Get course-specific metrics
+        const courseEnrollments = courses.map(c => ({
+            id: String(c._id),
+            title: c.title,
+            enrollmentCount: (c.studentsEnrolled || []).length
+        }));
+
+        // Get all performance records for these courses
+        const courseIds = courses.map(c => c._id);
+        const perfDocs = await this.perf.find({ courseId: { $in: courseIds } }).lean().exec();
+
+        // Calculate average completion percentage
+        const avgCompletionPct = perfDocs.length
+            ? Math.round(perfDocs.reduce((s, p) => s + (p.progress || 0), 0) / perfDocs.length)
+            : 0;
+
+        return {
+            totalCourses: courses.length,
+            totalStudents: allStudentIds.size,
+            avgCompletionPct,
+            courseEnrollments
+        };
+    }
+
 }
