@@ -6,7 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 
 // Update this to match your MongoDB connection string
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/e-learning-platform';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/elearning';
 
 interface SeedData {
     users: any[];
@@ -52,6 +52,7 @@ async function seedDatabase() {
                 password: hashedPassword,
                 role: 'student',
                 isEmailVerified: true,
+                isProfileComplete: true,
                 profileImage: null,
                 learningPreferences: ['visual', 'interactive'],
                 subjectsOfInterest: ['web development', 'programming', 'javascript'],
@@ -78,6 +79,7 @@ async function seedDatabase() {
                 password: hashedPassword,
                 role: 'student',
                 isEmailVerified: true,
+                isProfileComplete: true,
                 profileImage: null,
                 learningPreferences: ['reading', 'practice'],
                 subjectsOfInterest: ['data science', 'python', 'machine learning'],
@@ -104,6 +106,7 @@ async function seedDatabase() {
                 password: hashedPassword,
                 role: 'instructor',
                 isEmailVerified: true,
+                isProfileComplete: true,
                 profileImage: null,
                 learningPreferences: [],
                 subjectsOfInterest: [],
@@ -130,6 +133,7 @@ async function seedDatabase() {
                 password: hashedPassword,
                 role: 'instructor',
                 isEmailVerified: true,
+                isProfileComplete: true,
                 profileImage: null,
                 learningPreferences: [],
                 subjectsOfInterest: [],
@@ -156,6 +160,7 @@ async function seedDatabase() {
                 password: hashedPassword,
                 role: 'admin',
                 isEmailVerified: true,
+                isProfileComplete: true,
                 profileImage: null,
                 learningPreferences: [],
                 subjectsOfInterest: [],

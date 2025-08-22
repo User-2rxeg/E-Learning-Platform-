@@ -1,67 +1,62 @@
-// src/app/auth/profile-setup/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import {useState, useEffect, JSX} from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
-import axios from 'axios';
+import authApi from '../../../lib/services/authApi';
 
 export default function ProfileSetup() {
-    const { user, isAuthenticated, isLoading } = useAuth();
+    const { user, token, isAuthenticated, isLoading } = useAuth();
     const router = useRouter();
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
-
-    const [profileData, setProfileData] = useState({
-        // Common fields
-        bio: '',
-        phoneNumber: '',
-
-        // Student-specific fields
-        learningInterests: [] as string[],
-        educationLevel: '',
-
-        // Instructor-specific fields
-        expertise: [] as string[],
-        yearsOfExperience: '',
-        qualifications: '',
-    });
+    const [profileData, setProfileData] = useState<any>({});
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        // Redirect if not authenticated
         if (!isLoading && !isAuthenticated) {
             router.push('/auth/login');
         }
-    }, [isLoading, isAuthenticated, router]);
+
+        if (user && token) {
+            authApi.getProfile(token).then((data) => {
+                setProfileData(data);
+            }).catch(() => {
+                setError('Failed to load profile data.');
+            });
+        }
+    }, [isLoading, isAuthenticated, user, token, router]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setProfileData(prev => ({
+        setProfileData((prev) => ({
             ...prev,
-            [name]: value
+            [name]: value,
         }));
     };
 
     const handleMultiSelectChange = (name: string, value: string) => {
-        setProfileData(prev => {
-            const currentValues = prev[name as keyof typeof prev] as string[];
-
-            if (Array.isArray(currentValues)) {
-                if (currentValues.includes(value)) {
-                    return {
-                        ...prev,
-                        [name]: currentValues.filter(item => item !== value)
-                    };
-                } else {
-                    return {
-                        ...prev,
-                        [name]: [...currentValues, value]
-                    };
-                }
-            }
-
-            return prev;
+        setProfileData((prev) => {
+            const currentValues = prev[name] || [];
+            return {
+                ...prev,
+                [name]: currentValues.includes(value)
+                    ? currentValues.filter((item) => item !== value)
+                    : [...currentValues, value],
+            };
         });
+    };
+
+    const validateForm = () => {
+        const errors: Record<string, string> = {};
+        if (!profileData.bio) errors.bio = 'Bio is required.';
+        if (!profileData.learningPreferences?.length) errors.learningPreferences = 'Learning preferences are required.';
+        if (!profileData.subjectsOfInterest?.length) errors.subjectsOfInterest = 'Subjects of interest are required.';
+        if (user.role === 'instructor' && !profileData.expertise?.length) {
+            errors.expertise = 'Expertise is required.';
+        }
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -69,132 +64,150 @@ export default function ProfileSetup() {
         setSaving(true);
         setError('');
 
+        if (!validateForm()) {
+            setSaving(false);
+            return;
+        }
+
         try {
-            await axios.post('/api/users/complete-profile', profileData);
-            router.push(`/dashboard/${user?.role}`);
+            await authApi.updateUser(user.id, profileData);
+            router.push(`/dashboard/${user.role}`);
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to save profile information. Please try again.');
+            setError(err.response?.data?.message || 'Failed to save profile information.');
         } finally {
             setSaving(false);
         }
     };
 
-    if (isLoading || !user) {
-        return <div className="max-w-3xl mx-auto my-12 p-8 bg-primary-light rounded-lg shadow-lg">Loading...</div>;
-    }
-
-    // Different fields based on user role
     const renderRoleSpecificFields = () => {
-        if (user.role === 'student') {
-            return (
+        if (!user || !user.role) {
+            return null;
+        }
+
+        const roleFields: Record<string, JSX.Element> = {
+            student: (
                 <>
                     <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-2">
-                            Learning Interests
+                        <label className="block text-sm font-medium text-text-secondary mb-1">
+                            Learning Preferences
                         </label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {['Programming', 'Data Science', 'Web Development', 'Mobile Development',
-                                'Cloud Computing', 'Artificial Intelligence', 'Design', 'Business'].map(interest => (
-                                <div key={interest} className="flex items-center">
+                        <div className="space-y-2">
+                            {['visual', 'auditory', 'kinesthetic', 'reading-writing'].map((preference) => (
+                                <div key={preference} className="flex items-center">
                                     <input
                                         type="checkbox"
-                                        id={`interest-${interest}`}
-                                        checked={profileData.learningInterests.includes(interest)}
-                                        onChange={() => handleMultiSelectChange('learningInterests', interest)}
+                                        id={`learningPreferences-${preference}`}
+                                        name="learningPreferences"
+                                        value={preference}
+                                        checked={profileData.learningPreferences?.includes(preference) || false}
+                                        onChange={(e) => handleMultiSelectChange('learningPreferences', e.target.value)}
                                         className="mr-2"
                                     />
-                                    <label htmlFor={`interest-${interest}`} className="text-white text-sm">
-                                        {interest}
+                                    <label
+                                        htmlFor={`learningPreferences-${preference}`}
+                                        className="text-blue-500"
+                                    >
+                                        {preference.charAt(0).toUpperCase() + preference.slice(1).replace('-', ' ')}
                                     </label>
                                 </div>
                             ))}
                         </div>
+                        {validationErrors.learningPreferences && (
+                            <p className="text-red-500 text-sm mt-1">{validationErrors.learningPreferences}</p>
+                        )}
                     </div>
-
                     <div>
-                        <label htmlFor="educationLevel" className="block text-sm font-medium text-text-secondary mb-1">
-                            Education Level
+                        <label className="block text-sm font-medium text-text-secondary mb-1">
+                            Subjects of Interest
                         </label>
-                        <select
-                            id="educationLevel"
-                            name="educationLevel"
-                            value={profileData.educationLevel}
-                            onChange={handleInputChange}
-                            className="w-full p-3 bg-primary border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent"
-                        >
-                            <option value="">Select your education level</option>
-                            <option value="high-school">High School</option>
-                            <option value="undergraduate">Undergraduate</option>
-                            <option value="graduate">Graduate</option>
-                            <option value="postgraduate">Postgraduate</option>
-                            <option value="professional">Professional</option>
-                        </select>
+                        <div className="space-y-2">
+                            {['IT Security', 'Data Science', 'Software Engineering', 'Media Informatics', 'Business', 'Machine Learning'].map((subject) => (
+                                <div key={subject} className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        id={`subjectsOfInterest-${subject}`}
+                                        name="subjectsOfInterest"
+                                        value={subject}
+                                        checked={profileData.subjectsOfInterest?.includes(subject) || false}
+                                        onChange={(e) => handleMultiSelectChange('subjectsOfInterest', e.target.value)}
+                                        className="mr-2"
+                                    />
+                                    <label
+                                        htmlFor={`subjectsOfInterest-${subject}`}
+                                        className="text-blue-500"
+                                    >
+                                        {subject.charAt(0).toUpperCase() + subject.slice(1)}
+                                    </label>
+                                </div>
+                            ))}
+                            <div className="flex items-center mt-2">
+                                <input
+                                    type="text"
+                                    id="customSubject"
+                                    name="customSubject"
+                                    placeholder="Add your own subject"
+                                    value={profileData.customSubject || ''}
+                                    onChange={handleInputChange}
+                                    className="w-full p-2 bg-primary border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent"
+                                />
+                            </div>
+                        </div>
+                        {validationErrors.subjectsOfInterest && (
+                            <p className="text-red-500 text-sm mt-1">{validationErrors.subjectsOfInterest}</p>
+                        )}
                     </div>
                 </>
-            );
-        } else if (user.role === 'instructor') {
-            return (
+            ),
+            instructor: (
                 <>
                     <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-2">
+                        <label className="block text-sm font-medium text-text-secondary mb-1">
                             Areas of Expertise
                         </label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {['Programming', 'Data Science', 'Web Development', 'Mobile Development',
-                                'Cloud Computing', 'Artificial Intelligence', 'Design', 'Business'].map(expertise => (
+                        <div className="space-y-2">
+                            {['IT Security', 'Data Science', 'Software Engineering', 'Media Informatics', 'Business', 'Machine Learning'].map((expertise) => (
                                 <div key={expertise} className="flex items-center">
                                     <input
                                         type="checkbox"
                                         id={`expertise-${expertise}`}
-                                        checked={profileData.expertise.includes(expertise)}
-                                        onChange={() => handleMultiSelectChange('expertise', expertise)}
+                                        name="expertise"
+                                        value={expertise}
+                                        checked={profileData.expertise?.includes(expertise) || false}
+                                        onChange={(e) => handleMultiSelectChange('expertise', e.target.value)}
                                         className="mr-2"
                                     />
-                                    <label htmlFor={`expertise-${expertise}`} className="text-white text-sm">
-                                        {expertise}
+                                    <label
+                                        htmlFor={`expertise-${expertise}`}
+                                        className="text-blue-500"
+                                    >
+                                        {expertise.charAt(0).toUpperCase() + expertise.slice(1)}
                                     </label>
                                 </div>
                             ))}
+                            <div className="flex items-center mt-2">
+                                <input
+                                    type="text"
+                                    id="customExpertise"
+                                    name="customExpertise"
+                                    placeholder="Add your own expertise"
+                                    value={profileData.customExpertise || ''}
+                                    onChange={handleInputChange}
+                                    className="w-full p-2 bg-primary border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent"
+                                />
+                            </div>
                         </div>
-                    </div>
-
-                    <div>
-                        <label htmlFor="yearsOfExperience" className="block text-sm font-medium text-text-secondary mb-1">
-                            Years of Experience
-                        </label>
-                        <input
-                            type="number"
-                            id="yearsOfExperience"
-                            name="yearsOfExperience"
-                            value={profileData.yearsOfExperience}
-                            onChange={handleInputChange}
-                            min="0"
-                            className="w-full p-3 bg-primary border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent"
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="qualifications" className="block text-sm font-medium text-text-secondary mb-1">
-                            Qualifications & Certifications
-                        </label>
-                        <textarea
-                            id="qualifications"
-                            name="qualifications"
-                            value={profileData.qualifications}
-                            onChange={handleInputChange}
-                            rows={3}
-                            className="w-full p-3 bg-primary border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent"
-                        />
+                        {validationErrors.expertise && (
+                            <p className="text-red-500 text-sm mt-1">{validationErrors.expertise}</p>
+                        )}
                     </div>
                 </>
-            );
-        }
+            ),
+        };
 
-        return null; // Admin has no special profile fields
+        return roleFields[user.role] || null;
     };
-
     return (
-        <div className="max-w-3xl mx-auto my-12 p-8 bg-primary-light rounded-lg shadow-lg">
+        <div className="max-w-2xl mx-auto my-12 p-8 bg-primary-light rounded-lg shadow-lg">
             <h1 className="text-2xl font-bold text-white mb-6 text-center">Complete Your Profile</h1>
 
             {error && (
@@ -211,26 +224,29 @@ export default function ProfileSetup() {
                     <textarea
                         id="bio"
                         name="bio"
-                        value={profileData.bio}
+                        value={profileData.bio || ''}
                         onChange={handleInputChange}
                         rows={3}
                         className="w-full p-3 bg-primary border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent"
                         placeholder="Tell us about yourself"
                     />
+                    {validationErrors.bio && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.bio}</p>
+                    )}
                 </div>
 
                 <div>
-                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-text-secondary mb-1">
-                        Phone Number (Optional)
+                    <label htmlFor="profileImage" className="block text-sm font-medium text-text-secondary mb-1">
+                        Profile Image URL (Optional)
                     </label>
                     <input
-                        type="tel"
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        value={profileData.phoneNumber}
+                        type="text"
+                        id="profileImage"
+                        name="profileImage"
+                        value={profileData.profileImage || ''}
                         onChange={handleInputChange}
                         className="w-full p-3 bg-primary border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent"
-                        placeholder="Your phone number"
+                        placeholder="Enter your profile image URL"
                     />
                 </div>
 

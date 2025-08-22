@@ -1,0 +1,1621 @@
+/* src/app/dashboard/instructor/courses/create/courseBuilder.module.css */
+
+.container {
+    min-height: 100vh;
+    background: var(--dashboard-bg, #0A0A0A);
+    color: var(--text-primary, #FFFFFF);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.backButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.backButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-blue);
+}
+
+.backButton svg {
+    width: 20px;
+    height: 20px;
+}
+
+.headerTitle h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, #FFFFFF 0%, #E0E0E0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.headerTitle p {
+    margin: 4px 0 0 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.headerActions {
+    display: flex;
+    gap: 12px;
+}
+
+.saveDraftButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.saveDraftButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-blue);
+}
+
+.saveDraftButton svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Progress Steps */
+.progressContainer {
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.progressSteps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    flex: 1;
+}
+
+.stepIcon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    font-size: 1.2rem;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.stepActive .stepIcon {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+    box-shadow: 0 0 20px rgba(62, 100, 255, 0.4);
+}
+
+.stepCompleted .stepIcon {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: white;
+}
+
+.stepTitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-align: center;
+    transition: color 0.3s ease;
+}
+
+.stepActive .stepTitle,
+.stepCompleted .stepTitle {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.stepLine {
+    position: absolute;
+    top: 25px;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 1;
+}
+
+.stepCompleted .stepLine {
+    background: var(--accent-green);
+}
+
+/* Content Area */
+.content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+.stepContent {
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Form Section */
+.formSection {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 30px;
+}
+
+.formSection h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 24px 0;
+    color: var(--text-primary);
+}
+
+/* Thumbnail Upload */
+.thumbnailSection {
+    margin-bottom: 30px;
+}
+
+.thumbnailSection label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.thumbnailUpload {
+    position: relative;
+}
+
+.uploadButton {
+    width: 100%;
+    max-width: 400px;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.uploadButton:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent-blue);
+}
+
+.uploadButton svg {
+    width: 48px;
+    height: 48px;
+    color: var(--text-secondary);
+}
+
+.uploadButton span {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.uploadButton small {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.thumbnailPreview {
+    position: relative;
+    max-width: 400px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.thumbnailPreview img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.removeThumbnail {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    background: rgba(239, 68, 68, 0.9);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.removeThumbnail:hover {
+    background: #DC2626;
+    transform: scale(1.1);
+}
+
+/* Form Controls */
+.formGroup {
+    margin-bottom: 24px;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.formGroup input[type="text"],
+.formGroup input[type="url"],
+.formGroup input[type="number"],
+.formGroup textarea,
+.formGroup select {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus,
+.formGroup select:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(62, 100, 255, 0.1);
+}
+
+.inputError {
+    border-color: rgba(239, 68, 68, 0.5) !important;
+}
+
+.errorText {
+    color: #EF4444;
+    font-size: 0.85rem;
+    margin-top: 4px;
+    display: block;
+}
+
+.errorBox {
+    padding: 12px 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    color: #EF4444;
+    margin-bottom: 20px;
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Tags */
+.tagInput input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: var(--text-primary);
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(62, 100, 255, 0.2);
+    border: 1px solid rgba(62, 100, 255, 0.3);
+    border-radius: 20px;
+    color: var(--accent-blue);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.tag button {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+}
+
+.tag button:hover {
+    opacity: 0.7;
+}
+
+/* Lists */
+.listInput {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.listInput input {
+    flex: 1;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: var(--text-primary);
+}
+
+.addButton {
+    padding: 12px 24px;
+    background: var(--accent-blue);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.addButton:hover {
+    background: #5576ff;
+    transform: translateY(-2px);
+}
+
+.list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: var(--text-primary);
+}
+
+.list li svg {
+    width: 16px;
+    height: 16px;
+    color: var(--accent-green);
+    flex-shrink: 0;
+}
+
+.list li button {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+}
+
+.list li button:hover {
+    color: #EF4444;
+}
+
+/* Module Section */
+.moduleSection {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 30px;
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.sectionHeader h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.addModuleButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--accent-blue);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.addModuleButton:hover {
+    background: #5576ff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(62, 100, 255, 0.3);
+}
+
+.addModuleButton svg {
+    width: 20px;
+    height: 20px;
+}
+
+.modulesList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 60px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.emptyState svg {
+    width: 64px;
+    height: 64px;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.emptyState p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.emptyState button {
+    padding: 10px 24px;
+    background: var(--accent-blue);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.emptyState button:hover {
+    background: #5576ff;
+    transform: translateY(-2px);
+}
+
+.moduleCard {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: move;
+    transition: all 0.3s ease;
+}
+
+.moduleCard:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.moduleHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dragHandle {
+    width: 24px;
+    height: 24px;
+    color: var(--text-secondary);
+    cursor: move;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+.moduleCard:hover .dragHandle {
+    opacity: 1;
+}
+
+.dragHandle svg {
+    width: 100%;
+    height: 100%;
+}
+
+.moduleNumber {
+    padding: 4px 10px;
+    background: rgba(62, 100, 255, 0.2);
+    border: 1px solid rgba(62, 100, 255, 0.3);
+    border-radius: 20px;
+    color: var(--accent-blue);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.moduleTitle {
+    flex: 1;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.expandButton,
+.deleteButton {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.expandButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+.deleteButton:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #EF4444;
+}
+
+.expandButton svg,
+.deleteButton svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+}
+
+.expandButton svg.rotated {
+    transform: rotate(180deg);
+}
+
+.moduleContent {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    animation: expand 0.3s ease;
+}
+
+@keyframes expand {
+    from { opacity: 0; max-height: 0; }
+    to { opacity: 1; max-height: 200px; }
+}
+
+.moduleContent textarea {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-primary);
+    resize: vertical;
+}
+
+/* Resources Section */
+.moduleResourcesList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.moduleResourceCard {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.moduleResourceHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.moduleResourceHeader h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.resourceCount {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.resourcesSection {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.resourcesList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.resourceItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.resourceIcon {
+    font-size: 1.5rem;
+}
+
+.resourceInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.resourceInfo input {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.urlInput {
+    font-size: 0.85rem !important;
+    color: var(--text-secondary) !important;
+}
+
+.fileName {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.removeResource {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    color: #EF4444;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.removeResource:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.resourceActions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.uploadResourceButton,
+.addLinkButton,
+.addQuizButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.uploadResourceButton {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.uploadResourceButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-blue);
+}
+
+.addLinkButton {
+    background: rgba(62, 100, 255, 0.1);
+    border: 1px solid rgba(62, 100, 255, 0.3);
+    color: var(--accent-blue);
+}
+
+.addLinkButton:hover {
+    background: rgba(62, 100, 255, 0.2);
+}
+
+.addQuizButton {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #F59E0B;
+}
+
+.addQuizButton:hover {
+    background: rgba(245, 158, 11, 0.2);
+}
+
+.uploadResourceButton svg,
+.addLinkButton svg,
+.addQuizButton svg {
+    width: 18px;
+    height: 18px;
+}
+
+.quizSummary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(245, 158, 11, 0.05);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 8px;
+}
+
+.quizIcon {
+    font-size: 2rem;
+}
+
+.quizInfo {
+    flex: 1;
+}
+
+.quizInfo h4 {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.quizInfo p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.removeQuiz {
+    padding: 6px 12px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    color: #EF4444;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.removeQuiz:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* Review Section */
+.reviewSection {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.previewCard {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+}
+
+.previewThumbnail {
+    width: 280px;
+    height: 160px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+}
+
+.previewThumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.placeholderThumbnail {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(62, 100, 255, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+}
+
+.placeholderThumbnail svg {
+    width: 48px;
+    height: 48px;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.previewContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.previewContent h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.previewContent p {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.previewMeta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.metaItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.metaItem svg {
+    width: 16px;
+    height: 16px;
+}
+
+.previewTags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.previewTag {
+    padding: 4px 10px;
+    background: rgba(62, 100, 255, 0.1);
+    border: 1px solid rgba(62, 100, 255, 0.2);
+    border-radius: 12px;
+    color: var(--accent-blue);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.summaryCard {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+}
+
+.summaryCard h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+}
+
+.summaryCard ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.summaryCard li {
+    padding: 8px 0;
+    color: var(--text-secondary);
+    position: relative;
+    padding-left: 20px;
+}
+
+.summaryCard li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--accent-blue);
+}
+
+.emptyText {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.structureList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.structureItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.moduleLabel {
+    padding: 4px 8px;
+    background: rgba(62, 100, 255, 0.2);
+    border-radius: 12px;
+    color: var(--accent-blue);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.resourceBadges {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+}
+
+.resourceBadges span {
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.publishOptions {
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+}
+
+.publishOptions h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 20px 0;
+}
+
+.statusOption {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.statusOption label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.statusOption label:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.statusOption input[type="radio"] {
+    margin-top: 2px;
+}
+
+.statusOption input[type="radio"]:checked + .statusCard {
+    opacity: 1;
+}
+
+.statusOption input[type="radio"]:checked ~ .statusCard {
+    opacity: 1;
+}
+
+.statusOption label:has(input:checked) {
+    background: rgba(62, 100, 255, 0.05);
+    border-color: var(--accent-blue);
+}
+
+.statusCard {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.statusTitle {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.statusDescription {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Footer */
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: rgba(255, 255, 255, 0.03);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.previousButton,
+.nextButton,
+.publishButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.previousButton {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.previousButton:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-blue);
+}
+
+.previousButton:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.nextButton,
+.publishButton {
+    background: var(--accent-blue);
+    border: none;
+    color: white;
+}
+
+.nextButton:hover,
+.publishButton:hover:not(:disabled) {
+    background: #5576ff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(62, 100, 255, 0.3);
+}
+
+.publishButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.previousButton svg,
+.nextButton svg,
+.publishButton svg {
+    width: 20px;
+    height: 20px;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Quiz Builder Modal */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modalContent {
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    background: var(--primary-light, #1A1A1A);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 30px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modalHeader h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.closeModal {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.closeModal:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #EF4444;
+}
+
+.modalBody {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+.quizSettings {
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.checkboxLabel input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.checkboxLabel span {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.questionBuilder {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+}
+
+.questionBuilder h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 20px 0;
+}
+
+.choiceInput {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.choiceLabel {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.choiceInput input[type="text"] {
+    flex: 1;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-primary);
+}
+
+.radioLabel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.radioLabel input[type="radio"] {
+    cursor: pointer;
+}
+
+.radioLabel span {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.addQuestionButton {
+    padding: 10px 20px;
+    background: var(--accent-green);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.addQuestionButton:hover {
+    background: #0EA570;
+    transform: translateY(-2px);
+}
+
+.questionsList {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+}
+
+.questionsList h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+}
+
+.questionItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.questionItem:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.questionNumber {
+    padding: 4px 8px;
+    background: rgba(62, 100, 255, 0.2);
+    border-radius: 6px;
+    color: var(--accent-blue);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.questionContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.questionContent p {
+    margin: 0;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.difficultyBadge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.difficultyBadge.easy {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+}
+
+.difficultyBadge.medium {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+}
+
+.difficultyBadge.hard {
+    background: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+}
+
+.removeQuestion {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    color: #EF4444;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.removeQuestion:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 30px;
+    background: rgba(255, 255, 255, 0.03);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cancelButton,
+.saveButton {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cancelButton {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.cancelButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.saveButton {
+    background: var(--accent-blue);
+    border: none;
+    color: white;
+}
+
+.saveButton:hover {
+    background: #5576ff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(62, 100, 255, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .formRow {
+        grid-template-columns: 1fr;
+    }
+
+    .previewCard {
+        flex-direction: column;
+    }
+
+    .previewThumbnail {
+        width: 100%;
+        height: 200px;
+    }
+
+    .summaryGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .progressSteps {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .step {
+        flex-direction: row;
+        width: 100%;
+    }
+
+    .stepLine {
+        display: none;
+    }
+
+    .content {
+        padding: 20px;
+    }
+
+    .formSection,
+    .moduleSection {
+        padding: 20px;
+    }
+
+    .moduleHeader {
+        flex-wrap: wrap;
+    }
+
+    .moduleTitle {
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .resourceActions {
+        flex-direction: column;
+    }
+
+    .uploadResourceButton,
+    .addLinkButton,
+    .addQuizButton {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .footer {
+        padding: 16px 20px;
+    }
+
+    .modalContent {
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .modalBody {
+        padding: 20px;
+    }
+}

@@ -2,389 +2,229 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
-import Link from 'next/link';
-import axios from 'axios';
+import { StatsCard } from '../../../components/dashboard/common/StatsCard';
+import { ActivityFeed } from '../../../components/dashboard/common/ActivityFeed';
+import { ProgressRing } from '../../../components/dashboard/common/ProgressRing';
+import { EmptyState } from '../../../components/dashboard/common/EmptyState';
+import { CourseProgress } from '../../../components/dashboard/student/CourseProgress';
+import { QuizHistory } from '../../../components/dashboard/student/QuizHistory';
+import { StudyStreak } from '../../../components/dashboard/student/StudyStreak';
+import { LearningChart } from '../../../components/dashboard/student/LearningChart';
 
-interface EnrolledCourse {
-    _id: string;
-    title: string;
-    description: string;
-    instructorId: {
-        _id: string;
-        name: string;
-    };
-    modules: any[];
-    progress?: number; // We'll calculate this from performance data
-}
+// Icons
+const BookIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    </svg>
+);
 
-interface Performance {
-    _id: string;
-    studentId: string;
-    courseId: string;
-    completionPercentage: number;
-    averageScore: number;
-    lastAccessed: string;
-    totalTimeSpent: number;
-    quizzesTaken: number;
-    assignmentsCompleted: number;
-}
+const TrophyIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+    </svg>
+);
 
-interface StudentSummary {
-    completionPct: number;
-    avgScore: number;
-    attemptsCount: number;
-    recentActivity?: {
-        attemptsLast7Days: number;
-        attemptsLast30Days: number;
-    };
-}
+const ClockIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+
+const ChartIcon = () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+);
 
 export default function StudentDashboard() {
-    const { user, token } = useAuth();
-    const router = useRouter();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(true);
-    const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
-    const [performances, setPerformances] = useState<Performance[]>([]);
-    const [studentSummary, setStudentSummary] = useState<StudentSummary | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const [dashboardData, setDashboardData] = useState<any>({
+        stats: {
+            enrolledCourses: 0,
+            completedCourses: 0,
+            averageScore: 0,
+            studyStreak: 0,
+            totalHours: 0,
+            completionRate: 0
+        },
+        courses: [],
+        recentActivity: [],
+        quizHistory: [],
+        upcomingDeadlines: []
+    });
 
     useEffect(() => {
-        if (user && token) {
-            fetchDashboardData();
-        }
-    }, [user, token]);
+        fetchDashboardData();
+    }, []);
 
     const fetchDashboardData = async () => {
-        if (!user) return;
-
         try {
             setLoading(true);
-            setError(null);
+            // Fetch dashboard data from API
+            // const response = await dashboardApi.getStudentDashboard();
+            // setDashboardData(response);
 
-            // Fetch enrolled courses using the correct endpoint
-            const coursesResponse = await axios.get(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/courses/enrolled`,
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-            );
-            console.log('Enrolled courses:', coursesResponse.data);
-            setEnrolledCourses(coursesResponse.data || []);
-
-            // Fetch performance data for the student
-            const performanceResponse = await axios.get(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/performance/student/${user.id}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-            );
-            console.log('Performance data:', performanceResponse.data);
-            setPerformances(performanceResponse.data || []);
-
-            // Fetch analytics summary
-            try {
-                const summaryResponse = await axios.get(
-                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/analytics/student/${user.id}/summary`,
-                    {
-                        headers: { Authorization: `Bearer ${token}` }
-                    }
-                );
-                console.log('Student summary:', summaryResponse.data);
-                setStudentSummary(summaryResponse.data);
-            } catch (summaryError) {
-                console.log('Analytics summary not available:', summaryError);
-                // Continue without summary - it's not critical
-            }
-
-        } catch (error: any) {
-            console.error('Error fetching dashboard data:', error);
-            setError(error.response?.data?.message || 'Failed to load dashboard data');
-        } finally {
+            // Mock data for now
+            setTimeout(() => {
+                setDashboardData({
+                    stats: {
+                        enrolledCourses: 5,
+                        completedCourses: 2,
+                        averageScore: 85,
+                        studyStreak: 7,
+                        totalHours: 124,
+                        completionRate: 67
+                    },
+                    courses: [
+                        { id: 1, title: 'Web Development', progress: 75, nextLesson: 'React Hooks' },
+                        { id: 2, title: 'Data Science', progress: 45, nextLesson: 'Linear Regression' },
+                        { id: 3, title: 'Machine Learning', progress: 30, nextLesson: 'Neural Networks' }
+                    ],
+                    recentActivity: [
+                        {
+                            id: '1',
+                            type: 'quiz',
+                            title: 'Completed Quiz',
+                            description: 'JavaScript Fundamentals - Score: 92%',
+                            timestamp: new Date(Date.now() - 1000 * 60 * 30)
+                        },
+                        {
+                            id: '2',
+                            type: 'course',
+                            title: 'Course Progress',
+                            description: 'Completed Module 3 in Web Development',
+                            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2)
+                        },
+                        {
+                            id: '3',
+                            type: 'achievement',
+                            title: 'Achievement Unlocked',
+                            description: '7-Day Study Streak!',
+                            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5)
+                        }
+                    ],
+                    quizHistory: [
+                        { id: 1, title: 'JavaScript Basics', score: 92, date: new Date(), difficulty: 'medium' },
+                        { id: 2, title: 'HTML & CSS', score: 88, date: new Date(), difficulty: 'easy' },
+                        { id: 3, title: 'React Fundamentals', score: 78, date: new Date(), difficulty: 'hard' }
+                    ],
+                    upcomingDeadlines: [
+                        { id: 1, title: 'Assignment: Build a Todo App', dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2) },
+                        { id: 2, title: 'Quiz: Advanced JavaScript', dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5) }
+                    ]
+                });
+                setLoading(false);
+            }, 1000);
+        } catch (error) {
+            console.error('Failed to fetch dashboard data:', error);
             setLoading(false);
         }
     };
 
-    // Helper function to get course progress
-    const getCourseProgress = (courseId: string): number => {
-        const performance = performances.find(p => p.courseId === courseId);
-        return performance?.completionPercentage || 0;
-    };
-
-    // Helper function to get course performance data
-    const getCoursePerformance = (courseId: string): Performance | undefined => {
-        return performances.find(p => p.courseId === courseId);
-    };
-
-    // Calculate overall stats from performance data
-    const calculateStats = () => {
-        const totalCourses = enrolledCourses.length;
-        const completedCourses = performances.filter(p => p.completionPercentage >= 100).length;
-        const avgScore = performances.length > 0
-            ? performances.reduce((acc, p) => acc + (p.averageScore || 0), 0) / performances.length
-            : 0;
-        const totalQuizzes = performances.reduce((acc, p) => acc + (p.quizzesTaken || 0), 0);
-        const totalHours = performances.reduce((acc, p) => acc + (p.totalTimeSpent || 0), 0) / 60; // Convert minutes to hours
-
-        return {
-            totalCourses,
-            completedCourses,
-            avgScore: Math.round(avgScore),
-            totalQuizzes,
-            totalHours: Math.round(totalHours)
-        };
-    };
-
-    const stats = calculateStats();
-
-    const getProgressColor = (progress: number) => {
-        if (progress >= 80) return 'bg-green-500';
-        if (progress >= 50) return 'bg-yellow-500';
-        return 'bg-blue-500';
-    };
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffTime = Math.abs(now.getTime() - date.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 0) return 'Today';
-        if (diffDays === 1) return 'Yesterday';
-        if (diffDays <= 7) return `${diffDays} days ago`;
-        return date.toLocaleDateString();
-    };
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-500 px-4 py-3 rounded-md">
-                    {error}
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <div className="container mx-auto px-4 py-8">
-            {/* Welcome Section */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-white mb-2">
-                    Welcome back, {user?.fullName}! 👋
+        <div className="space-y-6">
+            {/* Welcome Header */}
+            <div className="bg-gradient-to-r from-accent to-blue-500 rounded-xl p-8 text-white">
+                <h1 className="text-3xl font-bold mb-2">
+                    Welcome back, {user?.fullName || 'Student'}! 👋
                 </h1>
-                <p className="text-text-secondary">
-                    Track your learning progress and continue your courses
+                <p className="text-white/80">
+                    You're on a {dashboardData.stats.studyStreak} day learning streak! Keep it up!
                 </p>
             </div>
 
-            {/* Stats Overview - Using actual data from backend */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                <div className="bg-primary-light p-6 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-text-secondary text-sm">Enrolled</span>
-                        <span className="text-2xl">📚</span>
-                    </div>
-                    <div className="text-2xl font-bold text-white">{stats.totalCourses}</div>
-                    <Link href="/courses" className="text-accent text-sm hover:text-accent-hover">
-                        Browse more →
-                    </Link>
-                </div>
-
-                <div className="bg-primary-light p-6 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-text-secondary text-sm">Completed</span>
-                        <span className="text-2xl">✅</span>
-                    </div>
-                    <div className="text-2xl font-bold text-white">{stats.completedCourses}</div>
-                    <div className="text-green-400 text-sm">
-                        {stats.totalCourses > 0
-                            ? `${Math.round((stats.completedCourses / stats.totalCourses) * 100)}% rate`
-                            : 'Start learning!'}
-                    </div>
-                </div>
-
-                <div className="bg-primary-light p-6 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-text-secondary text-sm">Avg Score</span>
-                        <span className="text-2xl">📊</span>
-                    </div>
-                    <div className="text-2xl font-bold text-white">
-                        {studentSummary?.avgScore || stats.avgScore}%
-                    </div>
-                    <div className="text-text-secondary text-sm">
-                        Overall performance
-                    </div>
-                </div>
-
-                <div className="bg-primary-light p-6 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-text-secondary text-sm">Quizzes</span>
-                        <span className="text-2xl">📝</span>
-                    </div>
-                    <div className="text-2xl font-bold text-white">
-                        {studentSummary?.attemptsCount || stats.totalQuizzes}
-                    </div>
-                    <div className="text-text-secondary text-sm">
-                        Total attempts
-                    </div>
-                </div>
-
-                <div className="bg-primary-light p-6 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-text-secondary text-sm">Study Time</span>
-                        <span className="text-2xl">⏱️</span>
-                    </div>
-                    <div className="text-2xl font-bold text-white">{stats.totalHours}h</div>
-                    <div className="text-text-secondary text-sm">
-                        Total hours
-                    </div>
-                </div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatsCard
+                    title="Enrolled Courses"
+                    value={dashboardData.stats.enrolledCourses}
+                    icon={<BookIcon />}
+                    color="blue"
+                    loading={loading}
+                />
+                <StatsCard
+                    title="Average Score"
+                    value={`${dashboardData.stats.averageScore}%`}
+                    change={5}
+                    icon={<TrophyIcon />}
+                    color="green"
+                    loading={loading}
+                />
+                <StatsCard
+                    title="Study Streak"
+                    value={`${dashboardData.stats.studyStreak} days`}
+                    icon={<ClockIcon />}
+                    color="yellow"
+                    loading={loading}
+                />
+                <StatsCard
+                    title="Total Hours"
+                    value={dashboardData.stats.totalHours}
+                    change={12}
+                    icon={<ChartIcon />}
+                    color="purple"
+                    loading={loading}
+                />
             </div>
 
-            {/* Main Content Area */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                    {/* Continue Learning Section */}
-                    <div className="mb-8">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold text-white">My Courses</h2>
-                            <Link href="/courses" className="text-accent hover:text-accent-hover text-sm">
-                                Browse all courses →
-                            </Link>
-                        </div>
-
-                        {enrolledCourses.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {enrolledCourses.slice(0, 4).map((course) => {
-                                    const progress = getCourseProgress(course._id);
-                                    const performance = getCoursePerformance(course._id);
-
-                                    return (
-                                        <div key={course._id} className="bg-primary-light rounded-lg p-4 hover:shadow-lg transition-shadow">
-                                            <h3 className="font-semibold text-white mb-2 line-clamp-1">
-                                                {course.title}
-                                            </h3>
-                                            <p className="text-text-secondary text-sm mb-1">
-                                                by {course.instructorId?.name || 'Unknown'}
-                                            </p>
-                                            <p className="text-text-secondary text-xs mb-3 line-clamp-2">
-                                                {course.description}
-                                            </p>
-
-                                            {/* Progress Bar */}
-                                            <div className="mb-3">
-                                                <div className="flex justify-between text-xs text-text-secondary mb-1">
-                                                    <span>Progress</span>
-                                                    <span>{progress}%</span>
-                                                </div>
-                                                <div className="w-full bg-primary rounded-full h-2">
-                                                    <div
-                                                        className={`${getProgressColor(progress)} h-2 rounded-full transition-all`}
-                                                        style={{ width: `${progress}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* Course Stats */}
-                                            {performance && (
-                                                <div className="flex justify-between text-xs text-text-secondary mb-3">
-                                                    <span>Score: {Math.round(performance.averageScore)}%</span>
-                                                    <span>Last: {formatDate(performance.lastAccessed)}</span>
-                                                </div>
-                                            )}
-
-                                            <button
-                                                onClick={() => router.push(`/courses/${course._id}/learn`)}
-                                                className="w-full py-2 bg-accent hover:bg-accent-hover text-white rounded-md text-sm transition-colors"
-                                            >
-                                                {progress > 0 ? 'Continue Learning' : 'Start Course'}
-                                            </button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <div className="bg-primary-light rounded-lg p-8 text-center">
-                                <div className="text-4xl mb-4">📚</div>
-                                <p className="text-text-secondary mb-4">You haven't enrolled in any courses yet</p>
-                                <Link href="/courses" className="btn-primary inline-block">
-                                    Browse Courses
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Recent Activity from Analytics */}
-                    {studentSummary?.recentActivity && (
-                        <div>
-                            <h2 className="text-xl font-semibold text-white mb-4">Recent Activity</h2>
-                            <div className="bg-primary-light rounded-lg p-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="text-center">
-                                        <div className="text-3xl font-bold text-accent">
-                                            {studentSummary.recentActivity.attemptsLast7Days}
-                                        </div>
-                                        <p className="text-text-secondary text-sm">Quizzes Last 7 Days</p>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-3xl font-bold text-accent">
-                                            {studentSummary.recentActivity.attemptsLast30Days}
-                                        </div>
-                                        <p className="text-text-secondary text-sm">Quizzes Last 30 Days</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column - Course Progress */}
+                <div className="lg:col-span-2 space-y-6">
+                    <CourseProgress courses={dashboardData.courses} loading={loading} />
+                    <LearningChart loading={loading} />
+                    <QuizHistory quizzes={dashboardData.quizHistory} loading={loading} />
                 </div>
 
-                {/* Sidebar */}
+                {/* Right Column - Activity & Stats */}
                 <div className="space-y-6">
-                    {/* Quick Actions */}
-                    <div>
-                        <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
-                        <div className="bg-primary-light rounded-lg p-4 space-y-2">
-                            <Link href="/courses" className="block w-full py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-md text-center transition-colors">
-                                Browse Courses
-                            </Link>
-                            <Link href="/dashboard/my-courses" className="block w-full py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-md text-center transition-colors">
-                                All My Courses
-                            </Link>
-                            <Link href="/chat" className="block w-full py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-md text-center transition-colors">
-                                Study Chat
-                            </Link>
-                            <Link href="/forums" className="block w-full py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-md text-center transition-colors">
-                                Forums
-                            </Link>
-                            <Link href="/notes" className="block w-full py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-md text-center transition-colors">
-                                My Notes
-                            </Link>
+                    {/* Overall Progress */}
+                    <div className="bg-primary-light rounded-xl p-6 border border-gray-800">
+                        <h3 className="text-lg font-semibold text-white mb-4">Overall Progress</h3>
+                        <div className="flex justify-center">
+                            <ProgressRing progress={dashboardData.stats.completionRate} />
+                        </div>
+                        <div className="mt-4 space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-text-secondary">Completed</span>
+                                <span className="text-white font-medium">{dashboardData.stats.completedCourses} courses</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-text-secondary">In Progress</span>
+                                <span className="text-white font-medium">
+                  {dashboardData.stats.enrolledCourses - dashboardData.stats.completedCourses} courses
+                </span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Completion Overview */}
-                    {studentSummary && (
-                        <div>
-                            <h2 className="text-xl font-semibold text-white mb-4">Overall Progress</h2>
-                            <div className="bg-primary-light rounded-lg p-6">
-                                <div className="text-center">
-                                    <div className="text-4xl font-bold text-accent mb-2">
-                                        {Math.round(studentSummary.completionPct)}%
+                    <StudyStreak streak={dashboardData.stats.studyStreak} loading={loading} />
+                    <ActivityFeed activities={dashboardData.recentActivity} loading={loading} />
+
+                    {/* Upcoming Deadlines */}
+                    <div className="bg-primary-light rounded-xl p-6 border border-gray-800">
+                        <h3 className="text-lg font-semibold text-white mb-4">Upcoming Deadlines</h3>
+                        <div className="space-y-3">
+                            {dashboardData.upcomingDeadlines.length === 0 ? (
+                                <p className="text-text-secondary text-center py-4">No upcoming deadlines</p>
+                            ) : (
+                                dashboardData.upcomingDeadlines.map((deadline: any) => (
+                                    <div key={deadline.id} className="p-3 bg-primary rounded-lg">
+                                        <p className="text-white text-sm font-medium">{deadline.title}</p>
+                                        <p className="text-text-secondary text-xs mt-1">
+                                            Due: {new Date(deadline.dueDate).toLocaleDateString()}
+                                        </p>
                                     </div>
-                                    <p className="text-text-secondary">Overall Completion</p>
-                                </div>
-                            </div>
+                                ))
+                            )}
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>
