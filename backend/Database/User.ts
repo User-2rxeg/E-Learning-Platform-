@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
-export type UserDocument = User & Document;
+export type UserDocument = HydratedDocument<User>;
 
 export enum UserRole {
     STUDENT = 'student',
@@ -9,51 +9,71 @@ export enum UserRole {
     ADMIN = 'admin',
 }
 
-// Create a compatibility wrapper if needed
-const CompatProp: any = Prop;
-
 @Schema({ timestamps: true })
 export class User {
-    @CompatProp({ required: true })
-    name: string;
 
-    @CompatProp({ required: true, unique: true })
-    email: string;
+    @Prop({ required: true })
+    name!: string;
 
-    @CompatProp({ required: true })
-    password: string; // bcrypt-hashed
+    @Prop({ required: true, unique: true })
+    email!: string;
 
-    @CompatProp({ enum: UserRole, default: UserRole.STUDENT })
-    role: UserRole;
+    @Prop({ required: true })
+    password!: string;
 
-    @CompatProp({ default: false })
-    isEmailVerified: boolean;
+    @Prop({ enum: Object.values(UserRole), default: UserRole.STUDENT })  // <-- FIXED Enum Binding
+    role!: UserRole;
 
-    @CompatProp()
+    @Prop({ default: false })
+    isEmailVerified!: boolean;
+
+    @Prop()
     profileImage?: string;
 
-    @CompatProp({ type: [String], default: [] })
+    @Prop({ type: [String], default: [] })
     learningPreferences?: string[];
 
-    @CompatProp({ type: [String], default: [] })
+    @Prop({ type: [String], default: [] })
     subjectsOfInterest?: string[];
 
-    @CompatProp({ type: [String], default: [] })
+    @Prop({ type: [String], default: [] })
     expertise?: string[];
 
-    @CompatProp({ type: [Types.ObjectId], ref: 'Course', default: [] })
+    @Prop({ type: [Types.ObjectId], ref: 'Course', default: [] })
     teachingCourses?: Types.ObjectId[];
 
-    @CompatProp({ type: [Types.ObjectId], ref: 'Course', default: [] })
+    @Prop({ type: [Types.ObjectId], ref: 'Course', default: [] })
     enrolledCourses?: Types.ObjectId[];
 
-    @CompatProp({ type: [Types.ObjectId], ref: 'Course', default: [] })
+    @Prop({ type: [Types.ObjectId], ref: 'Course', default: [] })
     completedCourses?: Types.ObjectId[];
 
-    @CompatProp({ default: 0 })
+    @Prop({ default: 0 })
     averageScore?: number;
 
-    @CompatProp({
+    @Prop({ type: String, required: false })
+    otpCode?: string | null;
+
+    @Prop({ type: Date, required: false })
+    otpExpiresAt?: Date | null;
+
+    @Prop({ type: String, required: false })
+    passwordResetOtpCode?: String | null;
+
+    @Prop({ type: Date, required: false })
+    passwordResetOtpExpiresAt?: Date | null;
+    // add/adjust these props
+    @Prop({ default: false })
+    mfaEnabled?: boolean;
+
+    @Prop({ type: String, default: null, select: false }) // HIDE from queries by default
+    mfaSecret?: string | null;
+
+    @Prop({ type: [String], default: [], select: false }) // HIDE backup codes
+    mfaBackupCodes?: string[];
+
+
+    @Prop({
         type: [
             {
                 type: { type: String },
@@ -73,3 +93,35 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+
+UserSchema.index({ email: 1 }, { unique: true });         // explicit unique
+UserSchema.index({ name: 1 });                            // prefix search on name
+//UserSchema.index({ email: 1, name: 1 });                  // compound to help mixed filters
+
+ UserSchema.index({ name: 'text', email: 'text' });
+
+
+UserSchema.index({ role: 1, createdAt: -1 });
+
+
+
+UserSchema.set('toJSON', {
+    versionKey: false,
+    transform: (_doc, ret: any) => {
+        if (ret?.password) {
+            delete ret.password;
+        }
+        return ret;
+    },
+});
+
+UserSchema.set('toObject', {
+    versionKey: false,
+    transform: (_doc, ret: any) => {
+        if (ret?.password) {
+            delete ret.password;
+        }
+        return ret;
+    },
+});

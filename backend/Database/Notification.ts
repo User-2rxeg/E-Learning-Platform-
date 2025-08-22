@@ -1,25 +1,34 @@
-// Notification.ts
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
-const CompatProp: any = Prop;
-
+export type NotificationDocument = HydratedDocument<Notification>;
+export type NotificationType = 'courseUpdate' | 'assignmentDue' | 'newMessage' | 'systemAlert' | 'other';
 @Schema({ timestamps: true })
-export class Notification extends Document {
-    @CompatProp({ type: Types.ObjectId, ref: 'User', required: true })
-    recipientId: Types.ObjectId;
+export class Notification {
+    @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+    recipientId!: Types.ObjectId;
 
-    @CompatProp({ type: String, required: true })
-    type: string;
+    @Prop({ type: String, required: true })
+    type!: string;
 
-    @CompatProp({ type: String, required: true })
-    message: string;
+    @Prop({ type: String, required: true })
+    message!: string;
 
-    @CompatProp({ type: Boolean, default: false })
-    read: boolean;
+    @Prop({ type: Boolean, default: false })
+    read: boolean = false;
 
-    @CompatProp({ type: Date, default: Date.now })
-    createdAt: Date;
+
+    @Prop({ type: Types.ObjectId, ref: 'Course', required: false })
+    courseId?: Types.ObjectId;
+
+    @Prop({ type: Types.ObjectId, ref: 'User' })
+    sentBy?: Types.ObjectId;  // The admin/instructor who sent this notification
+
+
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);
+
+// Helpful indexes:
+NotificationSchema.index({ recipientId: 1, createdAt: -1 });
+NotificationSchema.index({ recipientId: 1, read: 1, createdAt:-1});

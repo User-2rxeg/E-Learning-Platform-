@@ -1,22 +1,25 @@
-// AuditLog.ts
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
-const CompatProp: any = Prop;
+export type AuditLogDocument = HydratedDocument<AuditLog>;
 
 @Schema()
-export class AuditLog extends Document {
-    @CompatProp({ type: Types.ObjectId, ref: 'User' })
-    userId: Types.ObjectId;
+export class AuditLog {
+    @Prop({ type: Types.ObjectId, ref: 'User' })
+    userId!: Types.ObjectId;
 
-    @CompatProp({ type: String, required: true })
-    event: string;
+    @Prop({ type: String, required: true })
+    event!: string;
 
-    @CompatProp({ type: Date, default: Date.now })
-    timestamp: Date;
+    @Prop({ type: Date, default: Date.now })
+    timestamp: Date = new Date();
 
-    @CompatProp({ type: Object, default: {} })
-    details: Record<string, any>;
+    @Prop({ type: Object, default: {} })
+    details: Record<string, any> = {};
 }
 
 export const AuditLogSchema = SchemaFactory.createForClass(AuditLog);
+
+
+AuditLogSchema.index({ event: 1, timestamp: -1 });
+AuditLogSchema.index({ userId: 1, timestamp: -1 });

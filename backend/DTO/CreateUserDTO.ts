@@ -1,39 +1,32 @@
 import { IsString, IsEmail, IsEnum, IsOptional, IsArray } from 'class-validator';
 import { UserRole } from '../Database/User';
 
-// Create compatibility wrappers for class-validator decorators
-const CompatIsString: any = IsString;
-const CompatIsEmail: any = IsEmail;
-const CompatIsEnum: any = IsEnum;
-const CompatIsOptional: any = IsOptional;
-const CompatIsArray: any = IsArray;
-
 export class CreateUserDto {
-    @CompatIsString()
-    name: string;
+    @IsString()
+    name!: string;
 
-    @CompatIsEmail()
-    email: string;
+    @IsEmail()
+    email!: string;
 
-    @CompatIsString()
-    password: string;
+    @IsString()
+    password!: string;
 
-    @CompatIsEnum(UserRole)
-    @CompatIsOptional()
+    @IsEnum(UserRole)
+    @IsOptional()
     role?: UserRole;
 
-    @CompatIsOptional()
-    @CompatIsArray()
+    @IsOptional()
+    @IsArray()
     learningPreferences?: string[];
 
-    @CompatIsOptional()
-    @CompatIsArray()
+    @IsOptional()
+    @IsArray()
     subjectsOfInterest?: string[];
 
-    @CompatIsOptional()
-    @CompatIsArray()
+    @IsOptional()
+    @IsArray()
     expertise?: string[];
 
-    @CompatIsOptional()
+    @IsOptional()
     profileImage?: string;
 }

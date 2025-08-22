@@ -1,26 +1,32 @@
-// NotificationDto.ts
-import { IsString, IsMongoId, IsBoolean, IsDate } from 'class-validator';
-
-const CompatIsString: any = IsString;
-const CompatIsMongoId: any = IsMongoId;
-const CompatIsBoolean: any = IsBoolean;
-const CompatIsDate: any = IsDate;
+// src/DTO/NotificationDTO.ts
+import {IsString, IsMongoId, IsOptional, IsEnum} from 'class-validator';
 
 export class CreateNotificationDto {
-    @CompatIsMongoId()
-    recipientId: string;
+    @IsMongoId()
+    recipientId!: string;         // string, not Types.ObjectId
 
-    @CompatIsString()
-    type: string;
+@IsEnum(['announcement\'|\'courseUpdate\' | \'assignmentDue\' | \'newMessage\' | \'systemAlert\' | \'other\''])
+type!: 'announcement' | 'courseUpdate' | 'assignmentDue' | 'newMessage' | 'systemAlert' | 'other';
 
-    @CompatIsString()
-    message: string;
+@IsString()
+    message!: string;
 
-    @CompatIsBoolean()
-    read: boolean;
-
-    @CompatIsDate()
-    createdAt: Date;
+    @IsMongoId()
+    @IsOptional()
+    courseId?: string;            // optional
 }
 
-export class UpdateNotificationDto extends CreateNotificationDto {}
+// For updates, do not allow client to set read/createdAt/sentBy directly
+export class UpdateNotificationDto {
+    @IsEnum(['announcement', 'courseUpdate', 'assignmentDue', 'newMessage', 'systemAlert', 'other'])
+    @IsOptional()
+    type?: 'announcement' | 'courseUpdate' | 'assignmentDue' | 'newMessage' | 'systemAlert' | 'other';
+
+    @IsString()
+    @IsOptional()
+    message?: string;
+
+    @IsMongoId()
+    @IsOptional()
+    courseId?: string;
+}

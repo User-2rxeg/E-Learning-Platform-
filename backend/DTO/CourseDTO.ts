@@ -1,82 +1,96 @@
-// CourseDto.ts
-import { IsString, IsBoolean, IsArray, IsMongoId, IsEnum, IsOptional, ValidateNested, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type } from "class-transformer";
+import { IsArray, IsBoolean, IsEnum, IsMongoId, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
 
-// Compatibility wrappers
-const CompatIsString: any = IsString;
-const CompatIsBoolean: any = IsBoolean;
-const CompatIsArray: any = IsArray;
-const CompatIsMongoId: any = IsMongoId;
-const CompatIsEnum: any = IsEnum;
-const CompatIsOptional: any = IsOptional;
-const CompatValidateNested: any = ValidateNested;
-const CompatIsNumber: any = IsNumber;
-const CompatType: any = Type;
+export class ResourceDto {
+    @IsEnum(['video', 'pdf', 'link'])
+    resourceType!: 'video' | 'pdf' | 'link';
 
-class ResourceDto {
-    @CompatIsEnum(['video', 'pdf', 'link'])
-    resourceType: string;
-
-    @CompatIsString()
-    url: string;
+    @IsString()
+    url!: string;
 }
 
-class ModuleDto {
-    @CompatIsString()
-    title: string;
+export class ModuleDto {
+    @IsString()
+    title!: string;
 
-    @CompatIsArray()
-    @CompatValidateNested({ each: true })
-    @CompatType(() => ResourceDto)
-    resources: ResourceDto[];
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ResourceDto)
+    resources!: ResourceDto[];
 
-    @CompatIsArray()
-    @CompatIsMongoId({ each: true })
-    @CompatIsOptional()
+    @IsArray()
+    @IsMongoId({ each: true })
+    @IsOptional()
     quizzes?: string[];
 
-    @CompatIsBoolean()
-    @CompatIsOptional()
+    @IsBoolean()
+    @IsOptional()
     notesEnabled?: boolean;
 }
 
-class FeedbackDto {
-    @CompatIsNumber()
-    rating: number;
+export class FeedbackDto {
+    @IsNumber()
+    rating!: number;
 
-    @CompatIsString()
-    @CompatIsOptional()
+    @IsString()
+    @IsOptional()
     comment?: string;
 }
 
 export class CourseDTO {
-    @CompatIsString()
-    title: string;
+    @IsString()
+    title!: string;
 
-    @CompatIsString()
-    description: string;
+    @IsString()
+    description!: string;
 
-    @CompatIsMongoId()
-    instructorId: string;
+    @IsMongoId()
+    instructorId!: string;
 
-    @CompatIsArray()
-    @CompatValidateNested({ each: true })
-    @CompatType(() => ModuleDto)
-    @CompatIsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ModuleDto)
+    @IsOptional()
     modules?: ModuleDto[];
 
-    @CompatIsArray()
-    @CompatIsString({ each: true })
-    @CompatIsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
     tags?: string[];
 
-    @CompatIsEnum(['active', 'archived', 'draft'])
-    @CompatIsOptional()
-    status?: string;
+    @IsEnum(['active', 'archived', 'draft'])
+    @IsOptional()
+    status?: 'active' | 'archived' | 'draft';
 
-    @CompatIsBoolean()
-    @CompatIsOptional()
+    @IsBoolean()
+    @IsOptional()
     certificateAvailable?: boolean;
 }
 
-export class UpdateCourseDto extends CourseDTO {}
+export class UpdateCourseDto extends CourseDTO {
+    @IsMongoId()
+    @IsOptional()
+    instructorId !: string;
+}
+
+import { PartialType } from '@nestjs/mapped-types';
+
+
+//export class UpdateCourseDto extends PartialType(CreateCourseDto) {}
+
+
+
+export class SearchCourseDto {
+    @IsOptional()
+    @IsString()
+    title?: string;
+
+    @IsOptional()
+    @IsString()
+    instructorName?: string;
+
+    @IsOptional()
+    @IsString()
+    tag?: string;
+}
+

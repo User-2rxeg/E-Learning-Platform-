@@ -1,0 +1,918 @@
+/* src/app/courses/[id]/courseDetails.module.css */
+
+.container {
+    min-height: 100vh;
+    background: var(--dashboard-bg, #0A0A0A);
+    color: var(--text-primary, #FFFFFF);
+}
+
+/* Loading State */
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 20px;
+}
+
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--accent-blue);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Error State */
+.errorContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 20px;
+}
+
+.backButton {
+    padding: 12px 24px;
+    background: var(--accent-blue);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.backButton:hover {
+    background: #5576ff;
+    transform: translateY(-2px);
+}
+
+/* Header Section */
+.header {
+    background: linear-gradient(135deg, rgba(62, 100, 255, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 40px 20px;
+}
+
+.headerContent {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.breadcrumb a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb a:hover {
+    color: var(--accent-blue);
+}
+
+.headerMain {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 40px;
+    align-items: start;
+}
+
+.headerInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    padding: 6px 14px;
+    background: rgba(62, 100, 255, 0.1);
+    color: var(--accent-blue);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0;
+    background: linear-gradient(135deg, #FFFFFF 0%, #E0E0E0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.description {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.instructor {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+}
+
+.instructorAvatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.instructorLabel {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0 0 4px 0;
+}
+
+.instructorName {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.stats {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.stat svg {
+    width: 20px;
+    height: 20px;
+    color: var(--accent-blue);
+}
+
+/* Enrollment Card */
+.headerActions {
+    position: sticky;
+    top: 20px;
+}
+
+.enrollCard {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 30px;
+    backdrop-filter: blur(10px);
+}
+
+.enrollPrice {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.priceLabel {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-green);
+}
+
+.enrollButton,
+.startButton,
+.editButton,
+.previewButton,
+.loginButton {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.enrollButton,
+.startButton {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.enrollButton:hover,
+.startButton:hover {
+    background: #5576ff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(62, 100, 255, 0.3);
+}
+
+.editButton {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.editButton:hover {
+    background: rgba(245, 158, 11, 0.3);
+}
+
+.previewButton {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.previewButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.loginButton {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.loginButton:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.enrollFeatures {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.feature svg {
+    width: 20px;
+    height: 20px;
+    color: var(--accent-green);
+    flex-shrink: 0;
+}
+
+/* Content Section */
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tab {
+    flex: 1;
+    padding: 12px 24px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.tab:hover {
+    color: var(--text-primary);
+}
+
+.tabActive {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.tabContent {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Overview Tab */
+.overview {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.learningObjectives {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.objective {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+}
+
+.objective svg {
+    width: 24px;
+    height: 24px;
+    color: var(--accent-green);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.objective span {
+    line-height: 1.5;
+    color: var(--text-primary);
+}
+
+.longDescription {
+    line-height: 1.7;
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+}
+
+.requirements {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.requirements li {
+    position: relative;
+    padding-left: 28px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.requirements li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--accent-blue);
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+/* Modules Tab */
+.modules {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.emptyModules {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.module {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.module:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.moduleHeader {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.moduleInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.moduleNumber {
+    font-size: 0.85rem;
+    color: var(--accent-blue);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.moduleTitle {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.moduleCount {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.chevron {
+    width: 24px;
+    height: 24px;
+    color: var(--text-secondary);
+    transition: transform 0.3s ease;
+}
+
+.chevronOpen {
+    transform: rotate(180deg);
+}
+
+.moduleContent {
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: expand 0.3s ease;
+}
+
+@keyframes expand {
+    from { opacity: 0; max-height: 0; }
+    to { opacity: 1; max-height: 1000px; }
+}
+
+.resource {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.resource:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.resourceIcon {
+    width: 40px;
+    height: 40px;
+    background: rgba(62, 100, 255, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.resourceIcon svg {
+    width: 20px;
+    height: 20px;
+    color: var(--accent-blue);
+}
+
+.resourceInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.resourceName {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.resourceSize {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.resourceLink {
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
+}
+
+.resourceLink:hover {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+}
+
+.resourceLink svg {
+    width: 16px;
+    height: 16px;
+}
+
+.lockedContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    color: var(--text-secondary);
+}
+
+.lockedContent svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Reviews Tab */
+.reviews {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.reviewsSummary {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 40px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+}
+
+.ratingOverview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.ratingNumber {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.ratingStars {
+    display: flex;
+    gap: 4px;
+}
+
+.ratingStars svg {
+    width: 24px;
+    height: 24px;
+}
+
+.starFilled {
+    color: #F59E0B;
+}
+
+.starEmpty {
+    color: rgba(255, 255, 255, 0.1);
+}
+
+.ratingCount {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.ratingBars {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+}
+
+.ratingBar {
+    display: grid;
+    grid-template-columns: 20px 1fr 40px;
+    gap: 12px;
+    align-items: center;
+}
+
+.barLabel {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.barContainer {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.barFill {
+    height: 100%;
+    background: linear-gradient(90deg, #F59E0B 0%, #EF4444 100%);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.barCount {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-align: right;
+}
+
+.reviewsList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.noReviews {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+}
+
+.review {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.review:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.reviewHeader {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.reviewerAvatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+}
+
+.reviewerInfo {
+    flex: 1;
+}
+
+.reviewerName {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.reviewMeta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.reviewStars {
+    display: flex;
+    gap: 2px;
+}
+
+.reviewStars svg {
+    width: 16px;
+    height: 16px;
+}
+
+.reviewDate {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.reviewComment {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Add Review Form */
+.addReview {
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+}
+
+.addReview h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 20px 0;
+}
+
+.reviewForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ratingInput,
+.commentInput {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ratingInput label,
+.commentInput label {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.starInput {
+    display: flex;
+    gap: 8px;
+}
+
+.starButton {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.starButton svg {
+    width: 32px;
+    height: 32px;
+    color: rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.starButton:hover svg {
+    color: #F59E0B;
+    transform: scale(1.1);
+}
+
+.commentInput textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 12px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+.commentInput textarea:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.submitReview {
+    padding: 12px 24px;
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+
+.submitReview:hover {
+    background: #5576ff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(62, 100, 255, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .headerMain {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .headerActions {
+        position: static;
+    }
+
+    .enrollCard {
+        max-width: 500px;
+    }
+}
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 1.8rem;
+    }
+
+    .tabs {
+        flex-direction: column;
+    }
+
+    .learningObjectives {
+        grid-template-columns: 1fr;
+    }
+
+    .reviewsSummary {
+        grid-template-columns: 1fr;
+    }
+
+    .ratingBar {
+        grid-template-columns: 20px 1fr 30px;
+    }
+}
