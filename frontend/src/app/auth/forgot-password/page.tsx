@@ -1,99 +1,167 @@
 // src/app/auth/forgot-password/page.tsx
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import Link from 'next/link';
+import {useAuth} from "../../../contexts/AuthContext";
+import {sessionManager} from "../../../lib/auth/sessionManager";
 
-export default function ForgotPasswordPage() {
+const MailIcon = () => <span>✉️</span>;
+const LockIcon = () => <span>🔒</span>;
+const ArrowLeftIcon = () => <span>←</span>;
+export default function ForgotPassword() {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
+    const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
+    const { forgotPassword } = useAuth();
     const router = useRouter();
+
+    const validateEmail = (email: string) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!email) {
+            setError('Please enter your email address');
+            return;
+        }
+
+        if (!validateEmail(email)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
         setLoading(true);
         setError('');
-        setMessage('');
 
         try {
-            await axios.post('/api/auth/forgot-password', { email });
-            setMessage('OTP sent to your email. Please check your inbox.');
+            await forgotPassword(email);
+            setSuccess(true);
+            sessionManager.setPendingEmail(email);
 
-            // Redirect to verify OTP page with email and reset mode
             setTimeout(() => {
-                router.push(`/auth/verify-otp?email=${encodeURIComponent(email)}&mode=reset`);
-            }, 2000);
+                router.push('/auth/reset-password');
+            }, 3000);
+
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to process request. Please try again.');
+            console.error('Forgot password error:', err);
+            setError(err.message || 'Failed to send reset code. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
+    if (success) {
+        return (
+            <div className="forgot-container">
+                <div className="forgot-card">
+                    <div className="forgot-success-content">
+                        <div className="forgot-success-icon">
+                            <MailIcon />
+                        </div>
+                        <h2 className="forgot-title">Check Your Email</h2>
+                        <p className="forgot-subtitle">
+                            We've sent a verification code to
+                        </p>
+                        <p className="forgot-email-display">{email}</p>
+                        <p className="forgot-description">
+                            Please check your inbox and enter the code on the next page.
+                            The code will expire in 10 minutes.
+                        </p>
+                        <div className="forgot-success-animation">
+                            <div className="forgot-success-spinner"></div>
+                            <p>Redirecting to verification page...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="max-w-md mx-auto my-12 p-8 bg-primary-light rounded-lg shadow-lg">
-            <h1 className="text-2xl font-bold text-white mb-6 text-center">Forgot Password</h1>
-
-            <p className="text-text-secondary mb-6 text-center">
-                Enter your email address and we'll send you a verification code to reset your password.
-            </p>
-
-            {/* Success Message */}
-            {message && (
-                <div className="bg-green-500 bg-opacity-20 border border-green-500 text-green-400 px-4 py-2 rounded-md mb-6">
-                    {message}
-                </div>
-            )}
-
-            {/* Error Message */}
-            {error && (
-                <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-500 px-4 py-2 rounded-md mb-6">
-                    {error}
-                </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-text-secondary mb-1">
-                        Email Address
-                    </label>
-                    <input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="w-full p-3 bg-primary border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-400"
-                        placeholder="Enter your email address"
-                    />
+        <div className="forgot-container">
+            <div className="forgot-card">
+                <div className="forgot-header">
+                    <div className="forgot-icon">
+                        <LockIcon />
+                    </div>
+                    <h1 className="forgot-title">Forgot Your Password?</h1>
+                    <p className="forgot-subtitle">
+                        No worries! Enter your email address and we'll send you a code to reset your password.
+                    </p>
                 </div>
 
-                <button
-                    type="submit"
-                    disabled={loading || !email.trim()}
-                    className="w-full py-3 px-4 bg-accent hover:bg-accent-hover text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                    {loading ? 'Sending Reset Code...' : 'Send Reset Code'}
-                </button>
-            </form>
+                {error && (
+                    <div className="forgot-errorAlert">
+                        {error}
+                    </div>
+                )}
 
-            <div className="mt-6 text-center space-y-2">
-                <p className="text-text-secondary text-sm">
-                    Remember your password?{' '}
-                    <Link href="/auth/login" className="text-accent hover:text-accent-hover">
-                        Sign In
+                <form onSubmit={handleSubmit} className="forgot-form">
+                    <div className="forgot-fieldGroup">
+                        <label htmlFor="email" className="forgot-label">
+                            Email Address
+                        </label>
+                        <div className="forgot-inputWrapper">
+                            <input
+                                id="email"
+                                type="email"
+                                value={email}
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    setError('');
+                                }}
+                                className="forgot-input"
+                                placeholder="Enter your registered email"
+                                autoComplete="email"
+                                autoFocus
+                                required
+                                disabled={loading}
+                            />
+                            <div className="forgot-input-icon">
+                                <MailIcon />
+                            </div>
+                        </div>
+                        <p className="forgot-helpText">
+                            We'll send a 6-digit verification code to this email
+                        </p>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading || !email.trim()}
+                        className="forgot-submitButton"
+                    >
+                        {loading ? (
+                            <span className="forgot-loadingSpinner">Sending Code...</span>
+                        ) : (
+                            'Send Reset Code'
+                        )}
+                    </button>
+                </form>
+
+                <div className="forgot-divider"></div>
+
+                <div className="forgot-footer">
+                    <Link href="/auth/login" className="forgot-backLink">
+                        <ArrowLeftIcon /> Back to Login
                     </Link>
-                </p>
-                <p className="text-text-secondary text-sm">
-                    Don't have an account?{' '}
-                    <Link href="/auth/register" className="text-accent hover:text-accent-hover">
-                        Sign Up
-                    </Link>
-                </p>
+
+                    <p className="forgot-footerText">
+                        Don't have an account?{' '}
+                        <Link href="/auth/register" className="forgot-link">
+                            Sign up
+                        </Link>
+                    </p>
+
+                    <p className="forgot-helpInfo">
+                        Having trouble? <Link href="/support" className="forgot-link">Contact Support</Link>
+                    </p>
+                </div>
             </div>
         </div>
     );

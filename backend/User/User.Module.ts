@@ -4,11 +4,13 @@ import { User, UserSchema } from '../Database/User';
 import { UserService } from './User.Service';
 import {UserController} from "./User.Controller";
 import {AuthModule} from "../Authentication/AuthModule";
+import {CourseModule} from "../Course/Course.Module";
 
 @Module({
     imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
         // Import AuthModule to use its services if needed
-forwardRef(()=> AuthModule), // Use forwardRef to avoid circular dependency issues
+forwardRef(()=> AuthModule),
+        forwardRef(() => CourseModule),// Use forwardRef to avoid circular dependency issues
     ],
 
     controllers: [UserController], // No controllers defined in this module

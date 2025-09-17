@@ -31,6 +31,8 @@ import { ValidationPipe } from '@nestjs/common';
 import * as express from 'express';
 import { join } from 'path';
 import {AppModule} from "./app.module";
+import {NestExpressApplication} from "@nestjs/platform-express";
+import {existsSync} from "fs";
 
 //async function bootstrap() {
     //const app = await NestFactory.create(AppModule);
@@ -77,35 +79,91 @@ import {AppModule} from "./app.module";
 
 
 
-import * as dotenv from 'dotenv';
+//import * as dotenv from 'dotenv';
 
-dotenv.config();
+//dotenv.config();
 
-async function bootstrap() {
-    try {
-        const app = await NestFactory.create(AppModule, {
-            logger: ['error', 'warn', 'log', 'debug', 'verbose']
-        });
+//async function bootstrap() {
+    //try {
+        //const app = await NestFactory.create(AppModule, {
+          //  logger: ['error', 'warn', 'log', 'debug', 'verbose']
+        //});
 
         // Setup CORS
-        app.enableCors({
-            origin: process.env.CORS_ORIGIN || true,
-            credentials: true
-        });
+        //app.enableCors({
+           // origin: process.env.CORS_ORIGIN || true,
+         //   credentials: true
+       // });
 
         // Add root handler
-        app.getHttpAdapter().get('/', (req, res) => {
-            res.json({ status: 'ok', message: 'Server is running' });
-        });
+        //app.getHttpAdapter().get('/', (req, res) => {
+          //  res.json({ status: 'ok', message: 'Server is running' });
+       // });
 
-        const port = process.env.PORT || 3334;
+       // const port = process.env.PORT || 3555;
 
         // Explicitly bind to IPv4 only
-        await app.listen(port, '127.0.0.1');
-        console.log(`Server running at http://127.0.0.1:${port}`);
-    } catch (error) {
-        console.error('Server failed to start:', error);
+        //await app.listen(port, '127.0.0.1');
+        //console.log(`Server running at http://127.0.0.1:${port}`);
+    //} catch (error) {
+       // console.error('Server failed to start:', error);
+   // }
+//}
+
+//bootstrap();
+
+async function bootstrap() {
+    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+    // Enable CORS
+    app.enableCors({
+        origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+        credentials: true,
+    });
+    app.useStaticAssets(join(process.cwd(), 'uploads'), {
+        prefix: '/uploads/',
+        setHeaders: (res, path) => {
+            if (path.endsWith('.mp4')) {
+                res.setHeader('Accept-Ranges', 'bytes');
+                res.setHeader('Content-Type', 'video/mp4');
+            }
+        }
+    });
+    // API prefix
+    app.setGlobalPrefix('api');
+
+    // Validation pipe
+    app.useGlobalPipes(new ValidationPipe());
+
+    // **CRITICAL FIX**: Serve static files from uploads directory
+    const uploadsPath = process.env.UPLOAD_DIR || join(process.cwd(), 'uploads');
+    console.log('Serving static files from:', uploadsPath);
+
+    // Create uploads directory if it doesn't exist
+    if (!existsSync(uploadsPath)) {
+        const fs = require('fs');
+        fs.mkdirSync(uploadsPath, { recursive: true });
     }
+
+    // Serve uploads at /uploads route
+    app.useStaticAssets(uploadsPath, {
+        prefix: '/uploads/',
+        // Add proper headers for video streaming
+        setHeaders: (res, path) => {
+            if (path.endsWith('.mp4') || path.endsWith('.webm')) {
+                res.setHeader('Accept-Ranges', 'bytes');
+                res.setHeader('Content-Type', 'video/mp4');
+            }
+            if (path.endsWith('.pdf')) {
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', 'inline');
+            }
+        }
+    });
+
+    const port = process.env.PORT || 3654;
+    await app.listen(port);
+    console.log(`Application is running on: http://localhost:${port}`);
 }
 
 bootstrap();

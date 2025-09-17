@@ -46,4 +46,9 @@ export class QuizController {
         await this.quizService.remove(id, userId);
         return { message: 'Quiz deleted successfully' };
     }
+
+    @Get('module/:moduleId')
+    async findByModule(@Param('moduleId') moduleId: string) {
+        return this.quizService.findByModuleId(moduleId);
+    }
 }

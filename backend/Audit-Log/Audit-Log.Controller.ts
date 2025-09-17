@@ -13,7 +13,8 @@ import {AuditLogService} from "./Audit-Log.Service";
 
 @Controller('audit')
 
-@Roles(UserRole.ADMIN)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN) // Only admins can access audit logs
 export class AuditLogController {
     constructor(private readonly audit: AuditLogService) {}
 

@@ -68,6 +68,18 @@ export class Performance {
         lastDifficulty: 'easy'|'medium'|'hard';
         seenQuestionIds: string[];
     }>;
+
+    @Prop({ type: [String], default: [] })
+    completedResources?: string[];
+
+    @Prop({ type: Number, default: 0 })
+    currentModule?: number;
+
+    @Prop({ type: Number, default: 0 })
+    currentResource?: number;
+
+    @Prop({ type: Date, default: Date.now })
+    lastAccessed?: Date;
 }
 
 export const PerformanceSchema = SchemaFactory.createForClass(Performance);

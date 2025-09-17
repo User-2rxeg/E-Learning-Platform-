@@ -271,41 +271,46 @@ export class AuthService {
         }
 
         try {
-
-            const testAccount = await nodemailer.createTestAccount();
-
-
+            // Use real Gmail transporter instead of Ethereal
             const transporter = nodemailer.createTransport({
-                host: 'smtp.ethereal.email',
-                port: 587,
-                secure: false,
+                host: process.env.SMTP_HOST,
+                port: Number(process.env.SMTP_PORT),
+                secure: process.env.SMTP_SECURE === 'true',
                 auth: {
-                    user: testAccount.user,
-                    pass: testAccount.pass
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS
                 }
             });
 
             const mailOptions = {
-                from: '"E-Learning Platform" <no-reply@elearning.com>',
+                from: `"${process.env.EMAIL_FROM_NAME}" <${process.env.SMTP_USER}>`,
                 to: email,
                 subject,
-                text
+                html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #333;">${subject}</h2>
+                    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h1 style="color: #3e64ff; font-size: 36px; text-align: center; letter-spacing: 8px;">
+                            ${otpCode}
+                        </h1>
+                    </div>
+                    <p style="color: #666;">${text}</p>
+                    <p style="color: #999; font-size: 12px; margin-top: 30px;">
+                        If you didn't request this, please ignore this email.
+                    </p>
+                </div>
+            `
             };
 
-            const info = await transporter.sendMail(mailOptions);
-            console.log(`OTP email sent successfully to ${email}`);
-            console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+            await transporter.sendMail(mailOptions);
+            console.log(`Email sent successfully to ${email}`);
 
-
-            console.log(`Development OTP for ${email}: ${otpCode}`);
         } catch (error) {
-            console.error(`Failed to send OTP email to ${email}:`, error);
-
-            // For development, still log the OTP but throw a friendly error
-            console.log(`Development OTP for ${email}: ${otpCode}`);
-            throw new BadRequestException('Email service unavailable. Check console for OTP (development only).');
+            console.error(`Failed to send email to ${email}:`, error);
+            throw new BadRequestException('Failed to send email. Please try again.');
         }
     }
+
 
 
     async sendOTP(email: string): Promise<void> {
@@ -430,7 +435,20 @@ export class AuthService {
         return { access_token, refresh_token, user: { _id: user._id, email: user.email, role: user.role } };
     }
 
+    async disableMfa(userId: string) {
+        await this.userService.updateUser(userId, {
+            mfaEnabled: false,
+            mfaSecret: null,
+            mfaBackupCodes: []
+        });
+        return { disabled: true };
+    }
 
+    async regenerateBackupCodes(userId: string) {
+        const backupCodes = this.generateBackupCodes();
+        await this.userService.updateUser(userId, { mfaBackupCodes: backupCodes });
+        return { backupCodes };
+    }
 
 
 

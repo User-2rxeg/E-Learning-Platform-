@@ -26,6 +26,8 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "express": "^5.1.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
     "mongodb": "^6.18.0",
     "mongoose": "^8.16.5",
     "multer": "^2.0.2",

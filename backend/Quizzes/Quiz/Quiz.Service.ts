@@ -64,4 +64,12 @@ export class QuizService {
 
         await this.quizModel.findByIdAndDelete(id).exec();
     }
+
+    async findByModuleId(moduleId: string): Promise<Quiz[]> {
+        return this.quizModel
+            .find({ moduleId: new Types.ObjectId(moduleId) })
+            .populate('createdBy', 'name email')
+            .sort({ createdAt: -1 })
+            .exec();
+    }
 }

@@ -1,4 +1,21 @@
-import {BadRequestException, Body, Controller, DefaultValuePipe, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors} from '@nestjs/common';
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    DefaultValuePipe,
+    Delete,
+    Get,
+    NotFoundException,
+    Param,
+    ParseIntPipe,
+    Patch,
+    Post,
+    Query,
+    Req, Res,
+    UploadedFile,
+    UseGuards,
+    UseInterceptors
+} from '@nestjs/common';
 import {CourseService} from './Course.Service';
 import {CourseDTO, FeedbackDto, ModuleDto, UpdateCourseDto} from '../DTO/CourseDTO';
 import {Throttle} from '@nestjs/throttler';
@@ -11,6 +28,11 @@ import {FileInterceptor} from "@nestjs/platform-express";
 import {CurrentUser} from "../Authentication/Decorators/Current-User";
 import {JwtPayload} from "../Authentication/Interfaces/JWT-Payload.Interface";
 import {fileFilter, limits, storage} from "../src/multer.config";
+import {UserService} from "../User/User.Service";
+import nodemailer from "nodemailer";
+import {existsSync} from "fs";
+import {join} from "path";
+import { Response } from 'express';
 
 @Controller('courses')
  // Global Guard for all Course routes
@@ -66,8 +88,10 @@ export class CourseController {
     @Roles(UserRole.STUDENT)
     @Patch(':id/enroll')
     async enroll(@Param('id') courseId: string, @Req() req: Request) {
-        const studentId = (req.user as any).sub; // Assuming JwtPayload includes sub as userId
-        return this.courseService.enrollStudent(courseId, studentId);
+        const studentId = (req.user as any).sub;
+        const result = await this.courseService.enrollStudent(courseId, studentId);
+
+        return result;
     }
 
     @Roles(UserRole.STUDENT)
@@ -204,5 +228,53 @@ export class CourseController {
         const studentId = user.sub;
         return this.courseService.getEnrolledCourses(studentId);
     }
+
+
+
+    @Get('uploads/:filename')
+    async serveUploadedFile(
+        @Param('filename') filename: string,
+        @Res() Res: Response    // ✅ Express Response
+    ) {
+        const filePath = join(process.env.UPLOAD_DIR || 'uploads', filename);
+
+        if (!existsSync(filePath)) {
+            throw new NotFoundException('File not found');
+        }
+
+        // Pick MIME type
+        const ext = filename.toLowerCase().split('.').pop();
+
+        switch (ext) {
+            case 'mp4':
+                Res.setHeader('Content-Type', 'video/mp4');
+                Res.setHeader('Accept-Ranges', 'bytes');
+                break;
+            case 'webm':
+                Res.setHeader('Content-Type', 'video/webm');
+                Res.setHeader('Accept-Ranges', 'bytes');
+                break;
+            case 'pdf':
+                Res.setHeader('Content-Type', 'application/pdf');
+                Res.setHeader('Content-Disposition', 'inline');
+                break;
+            case 'jpg':
+            case 'jpeg':
+                Res.setHeader('Content-Type', 'image/jpeg');
+                break;
+            case 'png':
+                Res.setHeader('Content-Type', 'image/png');
+                break;
+            default:
+                Res.setHeader('Content-Type', 'application/octet-stream');
+        }
+
+        return  Res.sendFile(filePath, { root: process.cwd() }); // ✅ Express method
+    }
+
+
+
+
+
 }
 

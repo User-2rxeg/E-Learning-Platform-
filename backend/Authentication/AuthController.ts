@@ -133,13 +133,13 @@ async mfaVerifyLogin(@CurrentUser() user: JwtPayload, @Body() body: VerifyLoginD
     //@UseGuards(JwtAuthGuard)
     //@Get('mfa/status')
     //async mfaStatus(@CurrentUser() user: JwtPayload) {
-      //  return this.authService.getMfaStatus(user.sub);
-    //}
-
-    //@UseGuards(JwtAuthGuard)
-    //@Post('mfa/disable')
-    //async disableMfa(@CurrentUser() user: JwtPayload) {
-     //   return this.authService.disableMfa(user.sub);
+     //   return this.authService.getMfaStatus(user.sub);
    // }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('mfa/disable')
+    async disableMfa(@CurrentUser() user: JwtPayload) {
+      return this.authService.disableMfa(user.sub);
+    }
 
 }

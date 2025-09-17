@@ -1,213 +1,349 @@
+
 // src/app/auth/reset-password/page.tsx
-'use client';
-
-import { useState, useEffect } from 'react';
+'use client';import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import Link from 'next/link';
+import {sessionManager} from "../../../lib/auth/sessionManager";
+import {useAuth} from "../../../contexts/AuthContext";
 
-export default function ResetPasswordPage() {
+
+const LockIcon = () => <span>🔒</span>;
+const KeyIcon = () => <span>🔑</span>;
+const EyeIcon = ({ open }: { open: boolean }) => <span>{open ? '👁' : '👁‍🗨'}</span>;
+const CheckIcon = () => <span>✓</span>;
+const XIcon = () => <span>✗</span>;
+const ShieldIcon = () => <span>🛡️</span>;const calculatePasswordStrength = (password: string) => {
+    let score = 0;
+    const checks = {
+        length: password.length >= 8,
+        lowercase: /[a-z]/.test(password),
+        uppercase: /[A-Z]/.test(password),
+        numbers: /\d/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };Object.values(checks).forEach(passed => { if (passed) score++; });const strengthLevels = [
+        { min: 0, message: 'Very Weak', color: '#ef4444' },
+        { min: 1, message: 'Weak', color: '#f97316' },
+        { min: 2, message: 'Fair', color: '#eab308' },
+        { min: 3, message: 'Good', color: '#84cc16' },
+        { min: 4, message: 'Strong', color: '#22c55e' },
+        { min: 5, message: 'Very Strong', color: '#10b981' },
+    ];const level = strengthLevels.reverse().find(l => score >= l.min) || strengthLevels[0];return {
+        score: (score / 5) * 100,
+        message: level.message,
+        color: level.color,
+        checks
+    };
+};export default function ResetPassword() {
+    const [step, setStep] = useState<'verify' | 'reset' | 'success'>('verify');
+    const [email, setEmail] = useState('');
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const [resendTimer, setResendTimer] = useState(0);
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [passwordStrength, setPasswordStrength] = useState({
+        score: 0,
+        message: '',
+        color: '',
+        checks: {
+            length: false,
+            lowercase: false,
+            uppercase: false,
+            numbers: false,
+            special: false,
+        }
+    });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [email, setEmail] = useState('');
-    const [otp, setOtp] = useState('');
-    const [success, setSuccess] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const router = useRouter();
-
-    // Retrieve email and OTP from session storage
-    useEffect(() => {
-        const storedEmail = sessionStorage.getItem('resetEmail');
-        const storedOtp = sessionStorage.getItem('resetOtp');
-
-        if (!storedEmail || !storedOtp) {
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});const { resetPassword, resendOTP } = useAuth();
+    const router = useRouter();useEffect(() => {
+        const storedEmail = sessionManager.getPendingEmail() || sessionManager.getResetEmail();    if (!storedEmail) {
             router.push('/auth/forgot-password');
             return;
+        }    setEmail(storedEmail);
+        setResendTimer(120);    if (otpRefs.current[0]) {
+            otpRefs.current[0].focus();
         }
-
-        setEmail(storedEmail);
-        setOtp(storedOtp);
-    }, [router]);
-
-    const validatePassword = (password: string) => {
-        const minLength = password.length >= 8;
-        const hasUpper = /[A-Z]/.test(password);
-        const hasLower = /[a-z]/.test(password);
-        const hasNumber = /\d/.test(password);
-
-        return {
-            minLength,
-            hasUpper,
-            hasLower,
-            hasNumber,
-            isValid: minLength && hasUpper && hasLower && hasNumber
-        };
-    };
-
-    const passwordValidation = validatePassword(newPassword);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        // Validate passwords match
-        if (newPassword !== confirmPassword) {
-            setError("Passwords don't match");
-            return;
+    }, [router]);useEffect(() => {
+        if (resendTimer > 0) {
+            const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+            return () => clearTimeout(timer);
         }
-
-        // Validate password strength
-        if (!passwordValidation.isValid) {
-            setError("Password doesn't meet security requirements");
-            return;
+    }, [resendTimer]);useEffect(() => {
+        if (newPassword) {
+            setPasswordStrength(calculatePasswordStrength(newPassword));
         }
-
-        setLoading(true);
-        setError('');
-
-        try {
-            const response = await axios.post('/api/auth/reset-password', {
-                email,
-                otp,
-                password: newPassword
-            });
-
-            setSuccess("Password reset successful! Redirecting to login...");
-
-            // Clear session storage
-            sessionStorage.removeItem('resetEmail');
-            sessionStorage.removeItem('resetOtp');
-
-            // Redirect after showing success message
-            setTimeout(() => {
-                router.push('/auth/login?reset=success');
-            }, 2000);
-
-        } catch (error: any) {
-            if (error.response?.status === 401) {
-                setError("The verification code is invalid or has expired. Please request a new code.");
+    }, [newPassword]);const handleOtpChange = (index: number, value: string) => {
+        if (value && !/^\d$/.test(value)) return;    const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);    if (value && index < 5) {
+            otpRefs.current[index + 1]?.focus();
+        }
+    };const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Backspace') {
+            if (!otp[index] && index > 0) {
+                otpRefs.current[index - 1]?.focus();
             } else {
-                setError(error.response?.data?.message || "Failed to reset password. Please try again.");
+                const newOtp = [...otp];
+                newOtp[index] = '';
+                setOtp(newOtp);
             }
+        }    if (e.key === 'ArrowLeft' && index > 0) {
+            otpRefs.current[index - 1]?.focus();
+        }
+        if (e.key === 'ArrowRight' && index < 5) {
+            otpRefs.current[index + 1]?.focus();
+        }
+    };const handleOtpPaste = (e: React.ClipboardEvent) => {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);    if (pastedData.length === 6) {
+            const newOtp = pastedData.split('');
+            setOtp(newOtp);
+            otpRefs.current[5]?.focus();
+        }
+    };const handleVerifyOtp = async () => {
+        const otpCode = otp.join('');    if (otpCode.length !== 6) {
+            setError('Please enter the complete 6-digit code');
+            return;
+        }    setStep('reset');
+        setError('');
+    };const validatePasswords = () => {
+        const errors: Record<string, string> = {};    if (!newPassword) {
+            errors.newPassword = 'Password is required';
+        } else if (newPassword.length < 8) {
+            errors.newPassword = 'Password must be at least 8 characters';
+        } else if (passwordStrength.score < 40) {
+            errors.newPassword = 'Password is too weak';
+        }    if (!confirmPassword) {
+            errors.confirmPassword = 'Please confirm your password';
+        } else if (newPassword !== confirmPassword) {
+            errors.confirmPassword = 'Passwords do not match';
+        }    setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
+    };const handleResetPassword = async () => {
+        if (!validatePasswords()) {
+            return;
+        }    setLoading(true);
+        setError('');    try {
+            const otpCode = otp.join('');
+            await resetPassword(email, otpCode, newPassword);        sessionManager.clearPendingEmail();
+            sessionManager.clearResetEmail();        setStep('success');        setTimeout(() => {
+                router.push('/auth/login?reset=success');
+            }, 3000);    } catch (err: any) {
+            console.error('Reset password error:', err);
+            setError(err.message || 'Failed to reset password. Please try again.');
         } finally {
             setLoading(false);
         }
-    };
-
-    return (
-        <div className="max-w-md mx-auto my-12 p-8 bg-primary-light rounded-lg shadow-lg">
-            <h1 className="text-2xl font-bold text-white mb-6 text-center">Reset Your Password</h1>
-
-            {email && (
-                <p className="text-text-secondary mb-6 text-center">
-                    Setting new password for <span className="text-white">{email}</span>
-                </p>
-            )}
-
-            {/* Success Message */}
-            {success && (
-                <div className="bg-green-500 bg-opacity-20 border border-green-500 text-green-400 px-4 py-2 rounded-md mb-6">
-                    {success}
+    };const handleResendOtp = async () => {
+        if (resendTimer > 0) return;    setLoading(true);
+        setError('');    try {
+            await resendOTP(email);
+            setResendTimer(120);
+            setOtp(['', '', '', '', '', '']);
+            otpRefs.current[0]?.focus();
+        } catch (err: any) {
+            setError('Failed to resend code. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };if (step === 'verify') {
+        return (
+            <div className="reset-container">
+                <div className="reset-card">
+                    <div className="reset-progress-bar">
+                        <div className="reset-progress-fill" style={{ width: '50%' }} />
+                    </div>                <div className="reset-header">
+                    <div className="reset-icon">
+                        <KeyIcon />
+                    </div>
+                    <h1 className="reset-title">Enter Verification Code</h1>
+                    <p className="reset-subtitle">
+                        We've sent a 6-digit code to
+                    </p>
+                    <p className="reset-email">{email}</p>
+                </div>                {error && <div className="reset-errorAlert">{error}</div>}                <div className="reset-otp-section">
+                    <div className="reset-otp-container">
+                        {otp.map((digit, index) => (
+                            <input
+                                key={index}
+                                ref={(el) => { otpRefs.current[index] = el; }}
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={1}
+                                value={digit}
+                                onChange={(e) => handleOtpChange(index, e.target.value)}
+                                onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                                onPaste={index === 0 ? handleOtpPaste : undefined}
+                                className={`reset-otp-input ${digit ? 'reset-otp-filled' : ''}`}
+                                disabled={loading}
+                                autoComplete="off"
+                            />
+                        ))}
+                    </div>                    <button
+                    onClick={handleVerifyOtp}
+                    disabled={loading || otp.join('').length !== 6}
+                    className="reset-submitButton"
+                >
+                    {loading ? 'Verifying...' : 'Verify Code'}
+                </button>                    <div className="reset-resend-section">
+                    {resendTimer > 0 ? (
+                        <p className="reset-resend-timer">
+                            Resend code in {Math.floor(resendTimer / 60)}:{(resendTimer % 60).toString().padStart(2, '0')}
+                        </p>
+                    ) : (
+                        <button
+                            onClick={handleResendOtp}
+                            className="reset-resend-button"
+                            disabled={loading}
+                        >
+                            Didn't receive? Resend code
+                        </button>
+                    )}
                 </div>
-            )}
-
-            {/* Error Message */}
-            {error && (
-                <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-500 px-4 py-2 rounded-md mb-6">
-                    {error}
+                </div>                <div className="reset-footer">
+                    <Link href="/auth/forgot-password" className="reset-link">
+                        ← Use a different email
+                    </Link>
                 </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-                {/* New Password */}
-                <div>
-                    <label htmlFor="newPassword" className="block text-sm font-medium text-text-secondary mb-1">
-                        New Password
-                    </label>
-                    <div className="relative">
+                </div>
+            </div>
+        );
+    }if (step === 'reset') {
+        return (
+            <div className="reset-container">
+                <div className="reset-card">
+                    <div className="reset-progress-bar">
+                        <div className="reset-progress-fill" style={{ width: '100%' }} />
+                    </div>                <div className="reset-header">
+                    <div className="reset-icon">
+                        <LockIcon />
+                    </div>
+                    <h1 className="reset-title">Create New Password</h1>
+                    <p className="reset-subtitle">
+                        Choose a strong password for your account
+                    </p>
+                </div>                {error && <div className="reset-errorAlert">{error}</div>}                <form onSubmit={(e) => { e.preventDefault(); handleResetPassword(); }} className="reset-form">
+                    <div className="reset-fieldGroup">
+                        <label className="reset-label">New Password</label>
+                        <div className="reset-inputWrapper">
+                            <input
+                                type={showNewPassword ? 'text' : 'password'}
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                className={`reset-input ${fieldErrors.newPassword ? 'reset-input-error' : ''}`}
+                                placeholder="Enter new password"
+                                disabled={loading}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                className="reset-eyeButton"
+                            >
+                                <EyeIcon open={showNewPassword} />
+                            </button>
+                        </div>                        {newPassword && (
+                        <div className="reset-password-strength">
+                            <div className="reset-strength-bar">
+                                <div
+                                    className="reset-strength-fill"
+                                    style={{
+                                        width: `${passwordStrength.score}%`,
+                                        backgroundColor: passwordStrength.color
+                                    }}
+                                />
+                            </div>
+                            <span
+                                className="reset-strength-text"
+                                style={{ color: passwordStrength.color }}
+                            >
+                                    {passwordStrength.message}
+                                </span>
+                        </div>
+                    )}                        {newPassword && (
+                        <div className="reset-password-requirements">
+                            <p className="reset-requirements-title">Password must contain:</p>
+                            <div className="reset-requirements-grid">
+                                    <span className={passwordStrength.checks.length ? 'reset-check-passed' : 'reset-check-failed'}>
+                                        {passwordStrength.checks.length ? <CheckIcon /> : <XIcon />} 8+ characters
+                                    </span>
+                                <span className={passwordStrength.checks.uppercase ? 'reset-check-passed' : 'reset-check-failed'}>
+                                        {passwordStrength.checks.uppercase ? <CheckIcon /> : <XIcon />} Uppercase
+                                    </span>
+                                <span className={passwordStrength.checks.lowercase ? 'reset-check-passed' : 'reset-check-failed'}>
+                                        {passwordStrength.checks.lowercase ? <CheckIcon /> : <XIcon />} Lowercase
+                                    </span>
+                                <span className={passwordStrength.checks.numbers ? 'reset-check-passed' : 'reset-check-failed'}>
+                                        {passwordStrength.checks.numbers ? <CheckIcon /> : <XIcon />} Number
+                                    </span>
+                                <span className={passwordStrength.checks.special ? 'reset-check-passed' : 'reset-check-failed'}>
+                                        {passwordStrength.checks.special ? <CheckIcon /> : <XIcon />} Special char
+                                    </span>
+                            </div>
+                        </div>
+                    )}                        {fieldErrors.newPassword && (
+                        <span className="reset-errorText">{fieldErrors.newPassword}</span>
+                    )}
+                    </div>                    <div className="reset-fieldGroup">
+                    <label className="reset-label">Confirm New Password</label>
+                    <div className="reset-inputWrapper">
                         <input
-                            id="newPassword"
-                            type={showPassword ? 'text' : 'password'}
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            required
-                            minLength={8}
-                            className="w-full p-3 bg-primary border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-400 pr-12"
-                            placeholder="Enter new password"
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className={`reset-input ${fieldErrors.confirmPassword ? 'reset-input-error' : ''}`}
+                            placeholder="Re-enter new password"
+                            disabled={loading}
                         />
                         <button
                             type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-white"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="reset-eyeButton"
                         >
-                            {showPassword ? '👁️' : '👁️‍🗨️'}
+                            <EyeIcon open={showConfirmPassword} />
                         </button>
-                    </div>
-
-                    {/* Password Requirements */}
-                    {newPassword && (
-                        <div className="mt-2 space-y-1">
-                            <p className="text-xs text-text-secondary">Password Requirements:</p>
-                            <div className="grid grid-cols-2 gap-1 text-xs">
-                                <span className={passwordValidation.minLength ? 'text-green-400' : 'text-red-400'}>
-                                    ✓ 8+ characters
-                                </span>
-                                <span className={passwordValidation.hasUpper ? 'text-green-400' : 'text-red-400'}>
-                                    ✓ Uppercase letter
-                                </span>
-                                <span className={passwordValidation.hasLower ? 'text-green-400' : 'text-red-400'}>
-                                    ✓ Lowercase letter
-                                </span>
-                                <span className={passwordValidation.hasNumber ? 'text-green-400' : 'text-red-400'}>
-                                    ✓ Number
-                                </span>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Confirm Password */}
-                <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-text-secondary mb-1">
-                        Confirm New Password
-                    </label>
-                    <input
-                        id="confirmPassword"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                        className="w-full p-3 bg-primary border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-400"
-                        placeholder="Confirm new password"
-                    />
-                    {confirmPassword && newPassword !== confirmPassword && (
-                        <p className="text-red-400 text-xs mt-1">Passwords don't match</p>
-                    )}
-                </div>
-
-                <button
+                    </div>                        {confirmPassword && newPassword !== confirmPassword && (
+                    <span className="reset-errorText">Passwords do not match</span>
+                )}                        {fieldErrors.confirmPassword && (
+                    <span className="reset-errorText">{fieldErrors.confirmPassword}</span>
+                )}
+                </div>                    <button
                     type="submit"
-                    disabled={loading || !passwordValidation.isValid || newPassword !== confirmPassword || !email || !otp}
-                    className="w-full py-3 px-4 bg-accent hover:bg-accent-hover text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    disabled={loading || !newPassword || !confirmPassword || passwordStrength.score < 40}
+                    className="reset-submitButton"
                 >
                     {loading ? 'Resetting Password...' : 'Reset Password'}
                 </button>
-            </form>
-
-            <div className="mt-6 text-center space-y-2">
-                <p className="text-text-secondary text-sm">
-                    <Link href="/auth/forgot-password" className="text-accent hover:text-accent-hover">
-                        Use a different email
+                </form>                <div className="reset-footer">
+                    <Link href="/auth/login" className="reset-link">
+                        ← Back to login
                     </Link>
-                </p>
-                <p className="text-text-secondary text-sm">
-                    Remember your password?{' '}
-                    <Link href="/auth/login" className="text-accent hover:text-accent-hover">
-                        Back to Login
-                    </Link>
-                </p>
+                </div>
+                </div>
             </div>
-        </div>
-    );
+        );
+    }if (step === 'success') {
+        return (
+            <div className="reset-container">
+                <div className="reset-card">
+                    <div className="reset-success-content">
+                        <div className="reset-success-icon">
+                            <ShieldIcon />
+                        </div>
+                        <h2 className="reset-title">Password Reset Successful!</h2>
+                        <p className="reset-subtitle">
+                            Your password has been reset successfully.
+                            You can now log in with your new password.
+                        </p>
+                        <div className="reset-success-animation">
+                            <div className="reset-success-spinner"></div>
+                            <p>Redirecting to login...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }return null;
 }

@@ -1,38 +1,31 @@
 // src/app/api/auth/forgot-password/route.ts
-import { NextResponse } from 'next/server';
-import axios from 'axios';
-
-export async function POST(request: Request) {
+import { NextRequest, NextResponse } from 'next/server';
+import {APP_CONFIG} from "../../../../config/app.config";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3654';
+export async function POST(request: NextRequest) {
     try {
-        const { email } = await request.json();
+        const body = await request.json();
+        const backendResponse = await fetch(`${APP_CONFIG.API.BASE_URL}/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
 
-        // Use the correct environment variable
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+        const data = await backendResponse.json();
 
-        // Log the request for debugging
-        console.log(`Sending forgot password request for: ${email}`);
-        console.log(`Backend URL: ${backendUrl}`);
-
-        if (!backendUrl) {
-            throw new Error("NEXT_PUBLIC_BACKEND_URL environment variable is not defined");
+        if (!backendResponse.ok) {
+            return NextResponse.json(
+                { error: data.message || 'Failed to send reset code' },
+                { status: backendResponse.status }
+            );
         }
 
-        const response = await axios.post(`${backendUrl}/auth/forgot-password`, {
-            email
-        });
-
-        return NextResponse.json(response.data);
-    } catch (error: any) {
-        console.error('Forgot password error details:', {
-            message: error.message,
-            response: error.response?.data,
-            status: error.response?.status,
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/forgot-password`
-        });
-
+        return NextResponse.json(data);
+    } catch (error) {
+        console.error('Forgot password error:', error);
         return NextResponse.json(
-            { message: error.message || 'An error occurred' },
-            { status: error.response?.status || 500 }
+            { error: 'Internal server error' },
+            { status: 500 }
         );
     }
 }

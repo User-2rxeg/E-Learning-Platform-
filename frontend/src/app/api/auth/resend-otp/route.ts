@@ -1,32 +1,65 @@
+// // src/app/api/auth/resend-otp/route.ts
+// import {NextRequest, NextResponse} from "next/server";
+// import {APP_CONFIG} from "../../../../config/app.config";
+// const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3555';
+//
+// export async function POST(request: NextRequest) {
+//     try {
+//         const body = await request.json();
+//         const backendResponse = await fetch(`${APP_CONFIG.API.BASE_URL}/auth/resend-otp`, {
+//             method: 'POST',
+//             headers: { 'Content-Type': 'application/json' },
+//             body: JSON.stringify(body),
+//         });
+//
+//         const data = await backendResponse.json();
+//
+//         if (!backendResponse.ok) {
+//             return NextResponse.json(
+//                 { error: data.message || 'Failed to resend OTP' },
+//                 { status: backendResponse.status }
+//             );
+//         }
+//
+//         return NextResponse.json(data);
+//     } catch (error) {
+//         console.error('Resend OTP error:', error);
+//         return NextResponse.json(
+//             { error: 'Internal server error' },
+//             { status: 500 }
+//         );
+//     }
+// }
+
+
 // src/app/api/auth/resend-otp/route.ts
-import { NextResponse } from 'next/server';
-import axios from 'axios';
+import {NextRequest, NextResponse} from "next/server";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3654';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
-        const { email, mode } = await request.json();
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+        const body = await request.json();
+        const backendResponse = await fetch(`${BACKEND_URL}/auth/resend-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
 
-        if (!backendUrl) {
-            throw new Error("NEXT_PUBLIC_BACKEND_URL environment variable is not defined");
+        const data = await backendResponse.json();
+
+        if (!backendResponse.ok) {
+            return NextResponse.json(
+                { error: data.message || 'Failed to resend OTP' },
+                { status: backendResponse.status }
+            );
         }
 
-        const response = await axios.post(`${backendUrl}/auth/resend-otp`, {
-            email,
-            mode
-        });
-
-        return NextResponse.json(response.data);
-    } catch (error: any) {
-        console.error('Resend OTP error details:', {
-            message: error.message,
-            response: error.response?.data,
-            status: error.response?.status
-        });
-
+        return NextResponse.json(data);
+    } catch (error) {
+        console.error('Resend OTP error:', error);
         return NextResponse.json(
-            { message: error.response?.data?.message || error.message || 'An error occurred' },
-            { status: error.response?.status || 500 }
+            { error: 'Internal server error' },
+            { status: 500 }
         );
     }
 }

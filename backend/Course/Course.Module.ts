@@ -30,6 +30,7 @@ import { User, UserSchema } from '../Database/User'; // <-- add this
 import { CourseService } from './Course.Service';
 import { CourseController } from './Course.Controller';
 import {fileFilter, limits, storage} from "../src/multer.config";
+import {AuthModule} from "../Authentication/AuthModule";
 
 
 @Module({
@@ -39,6 +40,7 @@ import {fileFilter, limits, storage} from "../src/multer.config";
             { name: User.name, schema: UserSchema }, // <-- register User model here
         ]),
         MulterModule.register({ storage, fileFilter, limits }),
+        AuthModule,
     ],
     controllers: [CourseController],
     providers: [CourseService],

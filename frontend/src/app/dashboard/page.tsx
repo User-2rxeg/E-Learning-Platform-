@@ -1,38 +1,77 @@
+//
+// // src/app/dashboard/page.tsx
+// 'use client';import { useEffect } from 'react';
+// import { useRouter } from 'next/navigation';
+// import { useAuth } from '../../contexts/AuthContext';
+//
+// export default function DashboardPage() {
+//     const router = useRouter();
+//     const { user, loading, isAuthenticated } = useAuth();useEffect(() => {
+// // Only redirect after loading is complete
+//         if (!loading) {
+//             if (!isAuthenticated || !user) {
+// // Not authenticated, redirect to login
+//                 router.push('/auth/login');
+//             } else {
+// // Authenticated, redirect based on role
+//                 switch (user.role) {
+//                     case 'student':
+//                         router.push('/dashboard/student');
+//                         break;
+//                     case 'instructor':
+//                         router.push('/dashboard/instructor');
+//                         break;
+//                     case 'admin':
+//                         router.push('/dashboard/admin');
+//                         break;
+//                     default:
+// // Fallback for unknown role
+//                         router.push('/courses');
+//                 }
+//             }
+//         }
+//     }, [user, loading, isAuthenticated, router]);// Show loading while checking auth
+//     return (
+//         <div className="min-h-screen flex items-center justify-center bg-gray-50">
+//             <div className="text-center">
+//                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+//                 <p className="mt-4 text-gray-600">Redirecting to your dashboard...</p>
+//             </div>
+//         </div>
+//     );
+// }
+
 // src/app/dashboard/page.tsx
 'use client';
-
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 
-export default function DashboardRedirector() {
-    const { user, isLoading } = useAuth();
+export default function DashboardPage() {
     const router = useRouter();
+    const { user, loading } = useAuth();
 
     useEffect(() => {
-        if (!isLoading && user) {
-            // Redirect based on user role
-            switch (user.role) {
-                case 'student':
-                    router.replace('/dashboard/student');
-                    break;
-                case 'instructor':
-                    router.replace('/dashboard/instructor');
-                    break;
-                case 'admin':
-                    router.replace('/dashboard/admin');
-                    break;
-                default:
-                    router.replace('/');
-            }
+        if (loading) return;
+        if (!user) return; // layout handles redirect to /auth/login
+
+        switch (user.role) {
+            case 'student':
+                router.replace('/dashboard/student'); break;
+            case 'instructor':
+                router.replace('/dashboard/instructor'); break;
+            case 'admin':
+                router.replace('/dashboard/admin'); break;
+            default:
+                router.replace('/courses');
         }
-    }, [user, isLoading, router]);
+    }, [loading, user, router]);
 
     return (
-        <div className="min-h-screen bg-primary-dark flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
             <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
-                <p className="text-text-secondary mt-4">Loading dashboard...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
+                <p className="mt-4 text-gray-600">Redirecting to your dashboard...</p>
             </div>
         </div>
     );

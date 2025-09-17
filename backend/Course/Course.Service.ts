@@ -4,6 +4,7 @@ import { Model, Types } from 'mongoose';
 import { Course, CourseDocument } from '../Database/Course';
 import {User, UserDocument, UserRole} from '../Database/User';
 import {CourseDTO, FeedbackDto, ModuleDto, UpdateCourseDto} from "../DTO/CourseDTO";
+import nodemailer from "nodemailer";
 
 
 @Injectable()
@@ -410,4 +411,6 @@ export class CourseService {
         }));
 
         return coursesWithProgress;}
+
+
 }
