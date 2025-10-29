@@ -1,5 +1,5 @@
 
-import {Global, Module} from '@nestjs/common';
+import {forwardRef, Global, Module} from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuditLog, AuditLogSchema } from '../Database/AuditLog';
 import {AuditLogService} from "./Audit-Log.Service";
@@ -8,8 +8,9 @@ import {AuthModule} from "../Authentication/AuthModule";
 
 @Global()
 @Module({
-    imports: [MongooseModule.forFeature([{ name: AuditLog.name, schema: AuditLogSchema }]),
-
+    imports: [
+        MongooseModule.forFeature([{ name: AuditLog.name, schema: AuditLogSchema }]),
+        forwardRef(() => AuthModule),
     ],
 
     providers: [AuditLogService],

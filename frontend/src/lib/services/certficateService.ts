@@ -3,9 +3,9 @@ import apiClient from './apiClient';
 class CertificateService {
     async generateCertificate(courseId: string) {
         try {
-            const response = await apiClient.post(/certificates/generate, {
+            const response = await apiClient.post(`/certificates/generate, {
                 courseId
-            });
+            }`);
             return response.data;
         } catch (error) {
             console.error('Failed to generate certificate:', error);

@@ -22,7 +22,7 @@ import {
     MessageSquare,
     Award,
     HelpCircle,
-    User
+    User, Shield
 } from 'lucide-react';
 import { useState } from 'react';
 export default function DashboardLayout({
@@ -67,9 +67,12 @@ export default function DashboardLayout({
         admin: [
             { name: 'Dashboard', href: '/dashboard/admin', icon: LayoutDashboard },
             { name: 'Users', href: '/dashboard/admin/users', icon: Users },
-            { name: 'Courses', href: '/dashboard/admin/courses', icon: BookOpen },
+            { name: 'Logs', href: '/dashboard/admin/logs', icon: Shield},
             { name: 'Analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
-            { name: 'Settings', href: '/dashboard/admin/settings', icon: Settings },
+            {  name: 'Feedbacks', href: '/dashboard/admin/feedback', icon: HelpCircle},
+            { name: 'Settings', href: '/dashboard/admin/settings', icon: Settings},
+            {name:'Chat',href:'/dashboard/admin/chat',icon: MessageSquare},
+
         ],
     };
     const currentNavigation = navigation[user.role as keyof typeof navigation] || navigation.student;
