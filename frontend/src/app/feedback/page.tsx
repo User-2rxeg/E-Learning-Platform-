@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import {useAuth} from "../../contexts/AuthContext";
-import {feedbackService} from "../../lib/services/feedbackApi";
+import {feedbackService} from "../../lib/services/feedback-api";
 
 
 export default function FeedbackPage() {
@@ -40,7 +40,7 @@ export default function FeedbackPage() {
         { value: 'bug', label: 'Bug Report', icon: Bug, color: 'text-red-600' },
         { value: 'feature', label: 'Feature Request', icon: Star, color: 'text-blue-600' },
         { value: 'ui', label: 'UI/UX Issue', icon: Eye, color: 'text-purple-600' },
-        { value: 'performance', label: 'Performance Issue', icon: Zap, color: 'text-yellow-600' },
+        { value: 'performance', label: 'performance Issue', icon: Zap, color: 'text-yellow-600' },
         { value: 'security', label: 'Security Concern', icon: Shield, color: 'text-orange-600' },
         { value: 'support', label: 'Support Request', icon: HelpCircle, color: 'text-green-600' },
         { value: 'other', label: 'Other', icon: FileText, color: 'text-gray-600' }

@@ -45,7 +45,7 @@ class SessionManager {
             sessionStorage.removeItem(APP_CONFIG.STORAGE.RESET_EMAIL);
         }
     }
-// User cache (for quick hydration only)
+// user cache (for quick hydration only)
     setUserCache(user: any): void {
         if (typeof window !== 'undefined') {
             localStorage.setItem(APP_CONFIG.STORAGE.USER_CACHE, JSON.stringify(user));

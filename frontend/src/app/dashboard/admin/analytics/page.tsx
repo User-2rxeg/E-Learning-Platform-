@@ -39,7 +39,7 @@ import {
     Lock,
     Unlock
 } from 'lucide-react';
-import {adminService} from "../../../../lib/services/adminApi";
+import {adminService} from "../../../../lib/services/admin-api";
 import {useAuth} from "../../../../contexts/AuthContext";
 
 
@@ -279,9 +279,9 @@ export default function AdminAnalytics() {
                     </div>
                 </div>
 
-                {/* Detailed Analytics Grid */}
+                {/* Detailed analytics Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    {/* User Distribution */}
+                    {/* user Distribution */}
                     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-semibold text-gray-900">User Distribution</h3>
@@ -407,7 +407,7 @@ export default function AdminAnalytics() {
                     )}
                 </div>
 
-                {/* System Performance Metrics */}
+                {/* System performance Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                         <div className="flex items-center justify-between mb-4">

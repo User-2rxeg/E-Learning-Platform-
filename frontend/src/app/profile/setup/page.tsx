@@ -356,7 +356,7 @@ export default function ProfilePage() {
                                         {Object.entries({
                                             emailNotifications: 'Email Notifications',
                                             pushNotifications: 'Push Notifications',
-                                            courseReminders: 'Course Reminders',
+                                            courseReminders: 'courses Reminders',
                                             promotionalEmails: 'Promotional Emails'
                                         }).map(([key, label]) => (
                                             <label key={key} className="flex items-center justify-between cursor-pointer">

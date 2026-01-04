@@ -42,7 +42,7 @@ import {
     ChevronDown,
     ChevronUp
 } from 'lucide-react';
-import {adminService} from "../../../../lib/services/adminApi";
+import {adminService} from "../../../../lib/services/admin-api";
 import {useAuth} from "../../../../contexts/AuthContext";
 
 interface SystemSettings {

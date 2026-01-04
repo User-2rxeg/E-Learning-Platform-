@@ -30,7 +30,7 @@ import {
     XCircle
 } from 'lucide-react';
 import {useAuth} from "../../../../contexts/AuthContext";
-import {adminService} from "../../../../lib/services/adminApi";
+import {adminService} from "../../../../lib/services/admin-api";
 
 
 
@@ -99,7 +99,7 @@ export default function UsersManagementPage() {
             setShowUserModal(false);
             setNewUser({ name: '', email: '', password: '', role: 'student' });
             fetchUsers();
-            alert('User created successfully');
+            alert('user created successfully');
         } catch (error) {
             console.error('Error creating user:', error);
             alert('Failed to create user');
@@ -110,7 +110,7 @@ export default function UsersManagementPage() {
         try {
             await adminService.updateUser(userId, updates);
             fetchUsers();
-            alert('User updated successfully');
+            alert('user updated successfully');
         } catch (error) {
             console.error('Error updating user:', error);
             alert('Failed to update user');
@@ -121,7 +121,7 @@ export default function UsersManagementPage() {
         try {
             await adminService.lockUser(userId);
             fetchUsers();
-            alert('User locked successfully');
+            alert('user locked successfully');
         } catch (error) {
             console.error('Error locking user:', error);
             alert('Failed to lock user');
@@ -132,7 +132,7 @@ export default function UsersManagementPage() {
         try {
             await adminService.unlockUser(userId);
             fetchUsers();
-            alert('User unlocked successfully');
+            alert('user unlocked successfully');
         } catch (error) {
             console.error('Error unlocking user:', error);
             alert('Failed to unlock user');
@@ -482,7 +482,7 @@ export default function UsersManagementPage() {
                 </div>
             </div>
 
-            {/* Create User Modal */}
+            {/* Create user Modal */}
             {showUserModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl p-6 max-w-md w-full">

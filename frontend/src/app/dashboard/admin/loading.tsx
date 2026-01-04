@@ -2,7 +2,7 @@
 export default function AdminDashboardLoading() {
     return (
         <div className="space-y-6 animate-pulse">
-            {/* Admin Header Skeleton */}
+            {/* admin Header Skeleton */}
             <div className="bg-primary-light rounded-xl p-8">
                 <div className="flex items-center justify-between">
                     <div>

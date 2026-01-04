@@ -1,14 +1,24 @@
 {
   "compilerOptions": {
-    "target": "ES2021",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "strict": true,
     "esModuleInterop": true,
+    "declaration": false,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "incremental": true,
     "skipLibCheck": true,
+    "strictNullChecks": false,
     "forceConsistentCasingInFileNames": true,
-
-  }
+    "noImplicitAny": false,
+    "strict": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
+// CHANGED TS.CONFIG FILE TARGET FROM ES2023 TO ES2022 TO FIX SCHEMAS COMPLIATION ISSUES SOME DEPENDENCIES

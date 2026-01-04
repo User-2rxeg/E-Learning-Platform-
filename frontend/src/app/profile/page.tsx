@@ -244,7 +244,7 @@ export default function ProfilePage() {
 // import { useAuth } from '../../contexts/AuthContext';
 // import Link from 'next/link';
 // import {
-//     User, Mail, Phone, MapPin, Globe, Github, Linkedin,
+//     user, Mail, Phone, MapPin, Globe, Github, Linkedin,
 //     Calendar, Award, BookOpen, Clock, Edit, Settings
 // } from 'lucide-react';
 // export default function ProfilePage() {

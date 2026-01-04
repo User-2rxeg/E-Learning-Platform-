@@ -100,7 +100,7 @@ export default function CertificateGeneration() {
         }
     };
 
-    // Certificate Template Components
+    // Certificate Template components
     const ModernCertificate = () => (
         <div className="relative bg-gradient-to-br from-blue-50 to-purple-50 p-12 rounded-lg shadow-2xl">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-500"></div>
@@ -328,7 +328,7 @@ export default function CertificateGeneration() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Certificate Details */}
                     <div className="lg:col-span-1 space-y-6">
-                        {/* Course Info */}
+                        {/* courses Info */}
                         <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
                             <h3 className="text-lg font-semibold text-white mb-4">Course Information</h3>
                             <div className="space-y-3">

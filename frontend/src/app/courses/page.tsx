@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 import { useAuth } from '../../contexts/AuthContext';
-import { courseService } from '../../lib/services/courseApi';
+import { courseService } from '../../lib/services/courses-api';
 
 interface Course {
     _id: string;
@@ -331,7 +331,7 @@ export default function CoursesPage() {
     );
 }
 
-// Course Card Component
+// courses Card Component
 function CourseCard({
                         course,
                         viewMode,
@@ -360,7 +360,7 @@ function CourseCard({
             className={viewMode === 'grid' ? 'course-courseCard' : 'course-courseListItem'}
             onClick={handleCardClick}
         >
-            {/* Course Image/Thumbnail */}
+            {/* courses Image/Thumbnail */}
             <div className="course-courseImage">
                 <div className="course-imagePlaceholder">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -376,7 +376,7 @@ function CourseCard({
                 {isEnrolled && <span className="course-enrolledBadge">Enrolled</span>}
             </div>
 
-            {/* Course Content */}
+            {/* courses Content */}
             <div className="course-courseContent">
                 <div className="course-courseHeader">
                     <h3 className="course-courseTitle">{course.title}</h3>

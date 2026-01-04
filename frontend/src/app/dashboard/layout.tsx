@@ -61,14 +61,14 @@ export default function DashboardLayout({
             { name: 'Dashboard', href: '/dashboard/instructor', icon: LayoutDashboard },
             { name: 'My Courses', href: '/dashboard/instructor/courses', icon: BookOpen },
             { name: 'Students', href: '/dashboard/instructor/students', icon: Users },
-            { name: 'Analytics', href: '/dashboard/instructor/analytics', icon: BarChart3 },
+            { name: 'analytics', href: '/dashboard/instructor/analytics', icon: BarChart3 },
             { name: 'Settings', href: '/dashboard/settings', icon: Settings },
         ],
         admin: [
             { name: 'Dashboard', href: '/dashboard/admin', icon: LayoutDashboard },
             { name: 'Users', href: '/dashboard/admin/users', icon: Users },
             { name: 'Logs', href: '/dashboard/admin/logs', icon: Shield},
-            { name: 'Analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
+            { name: 'analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
             {  name: 'Feedbacks', href: '/dashboard/admin/feedback', icon: HelpCircle},
             { name: 'Settings', href: '/dashboard/admin/settings', icon: Settings},
             {name:'Chat',href:'/dashboard/admin/chat',icon: MessageSquare},
@@ -122,7 +122,7 @@ export default function DashboardLayout({
                     })}
                 </nav>
 
-                {/* User Section */}
+                {/* user Section */}
                 <div className="p-4 border-t border-gray-200">
                     <div className={`flex items-center ${sidebarOpen ? 'justify-between' : 'justify-center'}`}>
                         {sidebarOpen && (

@@ -22,7 +22,7 @@ export default function StudentDashboardLoading() {
             {/* Main Content Grid Skeleton */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Course Progress Skeleton */}
+                    {/* courses progress-tracking Skeleton */}
                     <div className="bg-primary-light rounded-xl p-6 border border-gray-800">
                         <div className="h-6 bg-primary w-40 rounded mb-4"></div>
                         <div className="space-y-4">
@@ -37,7 +37,7 @@ export default function StudentDashboardLoading() {
                 </div>
 
                 <div className="space-y-6">
-                    {/* Progress Ring Skeleton */}
+                    {/* progress-tracking Ring Skeleton */}
                     <div className="bg-primary-light rounded-xl p-6 border border-gray-800">
                         <div className="h-6 bg-primary w-32 rounded mb-4"></div>
                         <div className="flex justify-center">

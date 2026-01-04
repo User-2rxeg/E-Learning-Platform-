@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../contexts/AuthContext';
-import { courseService } from '../../../lib/services/courseApi';
+import { courseService } from '../../../lib/services/courses-api';
 
 interface Module {
     title: string;

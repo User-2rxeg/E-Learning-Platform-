@@ -4,8 +4,8 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../contexts/AuthContext';
-import { courseService } from '../../../../../lib/services/courseApi';
-import { quizService } from '../../../../../lib/services/quizApi';
+import { courseService } from '../../../../../lib/services/courses-api';
+import { quizService } from '../../../../../lib/services/quizzes-api';
 
 
 
@@ -30,7 +30,7 @@ import {
     Trash2,
     ExternalLink, HelpCircle, Edit
 } from 'lucide-react';
-import {QuizData} from "../../../../../Components/QuizCreater";
+import {QuizData} from "../../../../../components/QuizCreater";
 
 interface Resource {
     _id?: string;
@@ -57,7 +57,7 @@ export default function CreateCoursePage() {
     const [activeStep, setActiveStep] = useState(0);
     const [saving, setSaving] = useState(false);
 
-    // Course data
+    // courses data
     const [courseData, setCourseData] = useState({
         title: '',
         description: '',
@@ -98,7 +98,7 @@ export default function CreateCoursePage() {
 
     const steps = [
         { title: 'Basic Info', icon: BookOpen },
-        { title: 'Course Details', icon: Settings },
+        { title: 'courses Details', icon: Settings },
         { title: 'Modules & Content', icon: FileText },
         { title: 'Review & Publish', icon: Eye },
     ];
@@ -461,7 +461,7 @@ export default function CreateCoursePage() {
                                     disabled={saving || !isStepValid()}
                                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                                 >
-                                    {saving ? 'Publishing...' : 'Publish Course'}
+                                    {saving ? 'Publishing...' : 'Publish courses'}
                                 </button>
                             )}
                         </div>
@@ -470,7 +470,7 @@ export default function CreateCoursePage() {
             </header>
 
             <div className="max-w-4xl mx-auto px-4 py-8">
-                {/* Progress Steps */}
+                {/* progress-tracking Steps */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between">
                         {steps.map((step, index) => (
@@ -790,7 +790,7 @@ export default function CreateCoursePage() {
                                 </div>
                             </div>
 
-                            {/* Enhanced Module Display with Quiz Management */}
+                            {/* Enhanced Module Display with quiz Management */}
                             {courseData.modules.length > 0 && (
                                 <div className="space-y-4">
                                     <h3 className="font-medium text-gray-900">Course Modules</h3>
@@ -883,7 +883,7 @@ export default function CreateCoursePage() {
                                                     )}
                                                 </div>
 
-                                                {/* Module Quizzes */}
+                                                {/* Module quizzes */}
                                                 <div>
                                                     <h5 className="text-sm font-medium text-gray-700 mb-2">
                                                         Quizzes ({moduleQuizzes[moduleIndex]?.length || 0})
@@ -1343,7 +1343,7 @@ export default function CreateCoursePage() {
                                 </div>
                             )}
 
-                            {/* Upload Progress */}
+                            {/* Upload progress-tracking */}
                             {isUploading && (
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-sm">

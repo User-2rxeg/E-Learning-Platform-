@@ -354,7 +354,7 @@ export default function PublicProfilePage() {
 // import { useAuth } from '../../../contexts/AuthContext';
 // import Link from 'next/link';
 // import {
-//     User, Mail, MapPin, Globe, Github, Linkedin, Twitter,
+//     user, Mail, MapPin, Globe, Github, Linkedin, Twitter,
 //     Calendar, Award, BookOpen, Clock, Edit, Users, Star
 // } from 'lucide-react';
 //
@@ -491,7 +491,7 @@ export default function PublicProfilePage() {
 //                                     />
 //                                 ) : (
 //                                     <div className="w-full h-full rounded-full bg-white dark:bg-gray-700 flex items-center justify-center">
-//                                         <User className="w-16 h-16 text-gray-400" />
+//                                         <user className="w-16 h-16 text-gray-400" />
 //                                     </div>
 //                                 )}
 //                             </div>

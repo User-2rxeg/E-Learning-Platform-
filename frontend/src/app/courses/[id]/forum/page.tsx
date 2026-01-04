@@ -17,7 +17,7 @@ import {
     ChevronRight,
     ArrowLeft
 } from 'lucide-react';
-import apiClient from "../../../../lib/services/apiC";
+import apiClient from "../../../../lib/services/api-client";
 interface Post {
     _id: string;
     content: string;
@@ -271,7 +271,7 @@ export default function CourseForum() {
                                                             <div className="w-8 h-8 bg-gray-300 rounded-full mr-3"></div>
                                                             <div>
                                                                 <p className="text-sm font-medium text-gray-900">
-                                                                    {post.author?.name || 'Unknown User'}
+                                                                    {post.author?.name || 'Unknown user'}
                                                                 </p>
                                                                 <p className="text-xs text-gray-500">{formatTimeAgo(post.timestamp)}</p>
                                                             </div>

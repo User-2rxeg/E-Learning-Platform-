@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../contexts/AuthContext';
-import { courseService } from '../../../lib/services/courseApi';
+import { courseService } from '../../../lib/services/courses-api';
 import {
     BookOpen,
     Users,
@@ -207,7 +207,7 @@ export default function InstructorDashboard() {
                 type: 'quiz',
                 studentName: 'Mike Wilson',
                 courseName: courses[0]?.title || 'React Advanced',
-                description: 'scored 95% on Quiz 2',
+                description: 'scored 95% on quiz 2',
                 timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
                 status: 'completed',
             },
@@ -578,7 +578,7 @@ export default function InstructorDashboard() {
                                                         <div className="flex items-center gap-3 mt-1">
                           <span className="text-xs text-gray-500">
                             {class_.type === 'live' && '🔴 Live Session'}
-                              {class_.type === 'quiz' && '📝 Quiz Due'}
+                              {class_.type === 'quiz' && '📝 quiz Due'}
                               {class_.type === 'assignment' && '📚 Assignment'}
                           </span>
                                                             <span className="text-xs text-gray-500">
@@ -971,8 +971,8 @@ export default function InstructorDashboard() {
                                 {[
                                     { title: 'Introduction to React Hooks', views: 1234, type: 'video' },
                                     { title: 'State Management Best Practices', views: 987, type: 'pdf' },
-                                    { title: 'Building Custom Components', views: 856, type: 'video' },
-                                    { title: 'Performance Optimization', views: 743, type: 'video' },
+                                    { title: 'Building Custom components', views: 856, type: 'video' },
+                                    { title: 'performance Optimization', views: 743, type: 'video' },
                                     { title: 'Testing React Applications', views: 612, type: 'pdf' },
                                 ].map((content, index) => (
                                     <div key={index} className="flex items-center justify-between">
@@ -992,7 +992,7 @@ export default function InstructorDashboard() {
                     </div>
                 )}
 
-                {/* Performance Insights */}
+                {/* performance Insights */}
                 <div className="mt-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-lg p-8 text-white">
                     <div className="flex items-center justify-between mb-6">
                         <div>

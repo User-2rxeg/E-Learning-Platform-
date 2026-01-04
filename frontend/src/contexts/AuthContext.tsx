@@ -5,7 +5,7 @@
 // import { useRouter, usePathname } from 'next/navigation';
 // import { sessionManager } from '../lib/auth/sessionManager';
 // import { APP_CONFIG } from '../config/app.config';
-// export interface User {
+// export interface user {
 //     _id: string;
 //     id?: string;
 //     email: string;
@@ -16,7 +16,7 @@
 //     profileComplete?: boolean;
 // }
 // interface AuthContextType {
-//     user: User | null;
+//     user: user | null;
 //     loading: boolean;
 //     error: string | null;
 //     isAuthenticated: boolean;
@@ -34,7 +34,7 @@
 //     success: boolean;
 //     mfaRequired?: boolean;
 //     tempToken?: string;
-//     user?: User;
+//     user?: user;
 //     error?: string;
 // }
 // interface RegisterData {
@@ -51,17 +51,17 @@
 // }
 // interface VerifyResult {
 //     success: boolean;
-//     user?: User;
+//     user?: user;
 //     error?: string;
 // }
 // interface MFAResult {
 //     success: boolean;
-//     user?: User;
+//     user?: user;
 //     error?: string;
 // }
 // const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // export function AuthProvider({ children }: { children: React.ReactNode }) {
-//     const [user, setUser] = useState<User | null>(null);
+//     const [user, setUser] = useState<user | null>(null);
 //     const [loading, setLoading] = useState(true);
 //     const [error, setError] = useState<string | null>(null);
 //     const router = useRouter();
@@ -356,11 +356,11 @@
 // // import {createContext, useContext, useState, useEffect, useCallback, useRef} from 'react';
 // // import { useRouter, usePathname } from 'next/navigation';
 // // //import {sessionManager} from "../lib/auth/sessionManager";
-// // import {sessionManager} from "../lib/services/SessM";
-// // import {emailService} from "../lib/services/emailService";
+// // import {sessionManager} from "../lib/service/SessM";
+// // import {emailService} from "../lib/service/emailService";
 // //
-// // // User type based on your backend
-// // export interface User {
+// // // user type based on your backend
+// // export interface user {
 // //     _id: string;
 // //     id?: string;
 // //     email: string;
@@ -374,7 +374,7 @@
 // //     teachingCourses?: string[];
 // // }
 // // interface AuthContextType {
-// //     user: User | null;
+// //     user: user | null;
 // //     loading: boolean;
 // //     error: string | null;
 // //     isAuthenticated: boolean;
@@ -394,7 +394,7 @@
 // //     success: boolean;
 // //     mfaRequired?: boolean;
 // //     tempToken?: string;
-// //     user?: User;
+// //     user?: user;
 // //     error?: string;
 // // }
 // // interface RegisterData {
@@ -411,12 +411,12 @@
 // // }
 // // interface VerifyResult {
 // //     success: boolean;
-// //     user?: User;
+// //     user?: user;
 // //     error?: string;
 // // }
 // // interface MFAResult {
 // //     success: boolean;
-// //     user?: User;
+// //     user?: user;
 // //     error?: string;
 // // }
 // // const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -431,7 +431,7 @@
 // //     '/',
 // // ];
 // // export function AuthProvider({ children }: { children: React.ReactNode }) {
-// //     const [user, setUser] = useState<User | null>(null);
+// //     const [user, setUser] = useState<user | null>(null);
 // //     const [loading, setLoading] = useState(true);
 // //     const [error, setError] = useState<string | null>(null);
 // //     const router = useRouter();
@@ -813,10 +813,10 @@
 import {createContext, useContext, useState, useEffect, useCallback, useRef} from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 //import {sessionManager} from "../lib/auth/sessionManager";
-import {sessionManager} from "../lib/services/SessM";
-import {emailService} from "../lib/services/emailService";
+import {sessionManager} from "../lib/services/session-manager";
+import {emailService} from "../lib/services/email-service";
 
-// User type based on your backend
+// user type based on your backend
 export interface User {
     _id: string;
     id?: string;

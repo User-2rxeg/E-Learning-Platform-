@@ -1,64 +1,82 @@
-// src/App.Module.ts
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
-import { JwtAuthGuard } from '../Authentication/Guards/AuthGuard';
-import { RolesGuard } from '../Authentication/Guards/RolesGuard';
-
-import { UserModule } from '../User/User.Module';
-import { AuthModule } from '../Authentication/AuthModule';
-import { QuizModule } from '../Quizzes/Quiz/Quiz.Module';
-import { QuizAttemptModule } from '../Quizzes/Quiz Attempt/QuizAttempt.Module';
-import { CourseModule } from '../Course/Course.Module';
-import { ForumModule } from '../Communication/Forum/Forum.Module';
-import { NotificationModule } from '../Communication/Notifications/Notification.Module';
-import { PerformanceModule } from '../Performance/Performance/Performance.Module';
-import { AuditLogModule } from '../Audit-Log/Audit-Log.Module';
-import { BackupModule } from '../Backup/Backup.Module';
-import {AdminModule} from "../Admin/Admin.Module";
-import {AnalyticsModule} from "../Performance/Analytics/Analytics-Module";
-import {ChatModule} from "../Communication/Chats/Chat-Module";
 import { ScheduleModule } from '@nestjs/schedule';
-import {MailModule} from "../Mail Test/mail.module";
-import {QuickNotesModule} from "../Quick-Notes/Quick-Notes.Module";
-import {ProgressModule} from "../Progress/Progress-Module"
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+
+import { UserModule } from './user/user.module';
+import { QuizModule } from './quizzes/quiz/quiz.module';
+import { QuizAttemptModule } from './quizzes/quiz-attempt/quiz-attempt.module';
+import { CoursesModule } from './courses/courses.module';
+import { ForumModule } from './forum/forum.module';
+import { PerformanceModule } from './performance/performance/performance.module';
+import { AuditLogModule } from './audit-log/audit-logging.module';
+import { AdminModule } from "./admin/admin.module";
+import { AnalyticsModule } from "./performance/analytics/analytics.module";
+import { QuickNotesModule } from "./quick-notes/quick-notes.module";
+import { ProgressTrackingModule } from "./progress-tracking/progress-tracking.module";
+import { BackupModule } from "./data-backup/module/backup-module";
+import { AuthenticationGuard } from "./auth/guards/authentication-guard";
+import { AuthorizationGuard } from "./auth/guards/authorization-guard";
+import { AuthModule } from "./auth/authentication-module";
+import { NotificationModule } from "./notifications/notification.module";
+import { ChatModule } from "./chat/chat.module";
+import { SecurityModule } from "./security/security.module";
+
 @Module({
     imports: [
+        // Configuration
         ConfigModule.forRoot({ isGlobal: true }),
         ScheduleModule.forRoot(),
+
+        // Rate limiting (global throttler)
+        ThrottlerModule.forRoot([{
+            ttl: 60000,    // 1 minute
+            limit: 100,    // 100 requests per minute per IP
+        }]),
+
+        // Database
         MongooseModule.forRootAsync({
             imports: [ConfigModule],
-useFactory: async (configService: ConfigService) => ({
-                uri: configService.get<string>('MONGODB_URI'),
+            useFactory: async (configService: ConfigService) => ({
+                uri: configService.get<string>('DATABASE_CONNECTION'),
             }),
-           inject: [ConfigService],
+            inject: [ConfigService],
         }),
+
+        // Security
+        SecurityModule,
+
+        // Core modules
+        AuthModule,
         AuditLogModule,
-        AuthModule, // <-- make sure this is imported so JwtAuthGuard can inject AuthService
         UserModule,
+
+        // Feature modules
+        CoursesModule,
         QuizModule,
         QuizAttemptModule,
-        CourseModule,
-       ForumModule,
-       NotificationModule,
+        ForumModule,
         PerformanceModule,
-        BackupModule,
-        AdminModule,
         AnalyticsModule,
-        ChatModule,
-        MailModule,
         QuickNotesModule,
-        ProgressModule,
+        ProgressTrackingModule,
 
+        // Communication
+        NotificationModule,
+        ChatModule,
+
+        // Admin
+        AdminModule,
+        BackupModule,
     ],
     providers: [
-       { provide: APP_GUARD, useClass: JwtAuthGuard }, // global JWT guard
-        { provide: APP_GUARD, useClass: RolesGuard },   // global Roles guard (optional but handy)
-   ],
+
+        { provide: APP_GUARD, useClass: AuthenticationGuard },
+        { provide: APP_GUARD, useClass: AuthorizationGuard },
+        { provide: APP_GUARD, useClass: ThrottlerGuard },
+    ],
 })
 export class AppModule {}
-
-
 

@@ -1,169 +1,133 @@
-
-
-//import { NestFactory } from '@nestjs/core';
-//import { AppModule } from './app.module';
-//import 'reflect-metadata';
-
-//async function bootstrap() {
-  //  const app = await NestFactory.create(AppModule);
-    //const port = process.env.PORT || 3111;
-
-    //try {
-      //  await app.listen(port);
-        //console.log(`Application running on port ${port}`);
-    //} catch (error: any) {
-      //  if (error.code === 'EADDRINUSE') {
-        //    console.error(`Port ${port} is already in use. Please set a different PORT in your .env file.`);
-        //} else {
-          //  console.error('Error starting server:', error);
-       // }
-        //process.exit(1);
-    //}
-//}
-
-//bootstrap();
-
-// src/main.ts
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-
 import { ValidationPipe } from '@nestjs/common';
-import * as express from 'express';
-import { join } from 'path';
-import {AppModule} from "./app.module";
-import {NestExpressApplication} from "@nestjs/platform-express";
-import {existsSync} from "fs";
+import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 
-//async function bootstrap() {
-    //const app = await NestFactory.create(AppModule);
-    //const port = process.env.PORT || 3222;
-
-    // 1) CORS (adjust origins as needed)
-    //app.enableCors({
-        //origin: process.env.CORS_ORIGIN?.split(',') ?? true,
-      //  credentials: true,
-    //});
-
-    // 2) Global validation (for your DTOs)
-    //app.useGlobalPipes(
-        //new ValidationPipe({
-            //whitelist: true,       // strips unknown props
-          //  forbidNonWhitelisted: false,
-        //    transform: true,       // auto-transform query/params to types
-      //  }),
-    //);
-
-    // 3) Serve uploaded files: http://localhost:3111/uploads/<filename>
-    //const uploadDir = process.env.UPLOAD_DIR || join(process.cwd(), 'uploads');
-    //app.use('/uploads', express.static(uploadDir));
-
-    //try {
-        //await app.listen(port);
-        //console.log(`Application running on port ${port}`);
-      //  console.log(`Serving uploads from: ${uploadDir}`);
-    //} catch (error: any) {
-        //if (error.code === 'EADDRINUSE') {
-          //  console.error(`Port ${port} is already in use. Set a different PORT in .env.`);
-        //} else {
-           // console.error('Error starting server:', error);
-      //  }
-    //    process.exit(1);
-  //  }
-//}
-
-//bootstrap();
-
-// In backend/src/main.ts
-
-
-
-
-
-//import * as dotenv from 'dotenv';
-
-//dotenv.config();
-
-//async function bootstrap() {
-    //try {
-        //const app = await NestFactory.create(AppModule, {
-          //  logger: ['error', 'warn', 'log', 'debug', 'verbose']
-        //});
-
-        // Setup CORS
-        //app.enableCors({
-           // origin: process.env.CORS_ORIGIN || true,
-         //   credentials: true
-       // });
-
-        // Add root handler
-        //app.getHttpAdapter().get('/', (req, res) => {
-          //  res.json({ status: 'ok', message: 'Server is running' });
-       // });
-
-       // const port = process.env.PORT || 3555;
-
-        // Explicitly bind to IPv4 only
-        //await app.listen(port, '127.0.0.1');
-        //console.log(`Server running at http://127.0.0.1:${port}`);
-    //} catch (error) {
-       // console.error('Server failed to start:', error);
-   // }
-//}
-
-//bootstrap();
+const cookieParser = require('cookie-parser');
 
 async function bootstrap() {
-    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    const app = await NestFactory.create(AppModule);
 
-    // Enable CORS
+    // Security middleware - Helmet for various HTTP headers
+    app.use(helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                imgSrc: ["'self'", "data:", "https:"],
+                scriptSrc: ["'self'", "'unsafe-inline'"], // Required for Swagger
+            },
+        },
+        crossOriginEmbedderPolicy: false, // Required for Swagger UI
+        hsts: {
+            maxAge: 31536000,
+            includeSubDomains: true,
+        },
+    }));
+
+    app.use(cookieParser());
+
+    // Global validation pipe with security options - OWASP compliant
+    app.useGlobalPipes(new ValidationPipe({
+        whitelist: true,              // Strip non-whitelisted properties
+        transform: true,              // Transform payloads to DTO instances
+        forbidNonWhitelisted: true,   // Throw error on non-whitelisted properties
+        forbidUnknownValues: true,    // Throw error on unknown values
+        disableErrorMessages: process.env.NODE_ENV === 'production', // Hide error details in production
+        transformOptions: {
+            enableImplicitConversion: false, // Strict type conversion
+        },
+    }));
+
+    // CORS configuration - OWASP compliant
+    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+        'http://localhost:3999',
+        'http://localhost:3000',
+        'http://localhost:5000',
+    ];
+
     app.enableCors({
-        origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-        credentials: true,
-    });
-    app.useStaticAssets(join(process.cwd(), 'uploads'), {
-        prefix: '/uploads/',
-        setHeaders: (res, path) => {
-            if (path.endsWith('.mp4')) {
-                res.setHeader('Accept-Ranges', 'bytes');
-                res.setHeader('Content-Type', 'video/mp4');
+        origin: (origin, callback) => {
+            // Allow requests with no origin (mobile apps, curl, etc.)
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
             }
-        }
+        },
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
+        exposedHeaders: ['X-Total-Count', 'X-Page', 'X-Limit'],
+        maxAge: 86400, // 24 hours
     });
-    // API prefix
-    app.setGlobalPrefix('api');
 
-    // Validation pipe
-    app.useGlobalPipes(new ValidationPipe());
+    // Swagger setup (disable in production if needed)
+    if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'true') {
+        const config = new DocumentBuilder()
+            .setTitle('E-Learning Platform API')
+            .setDescription(`
+## API documentation for the E-Learning Platform
 
-    // **CRITICAL FIX**: Serve static files from uploads directory
-    const uploadsPath = process.env.UPLOAD_DIR || join(process.cwd(), 'uploads');
-    console.log('Serving static files from:', uploadsPath);
+### Authentication
+This API uses **HTTP-Only Cookie Authentication**. After successful login, an \`access_token\` cookie is automatically set.
 
-    // Create uploads directory if it doesn't exist
-    if (!existsSync(uploadsPath)) {
-        const fs = require('fs');
-        fs.mkdirSync(uploadsPath, { recursive: true });
+### Security Features
+- JWT-based authentication with HTTP-only cookies
+- Role-Based Access Control (RBAC)
+- Account lockout after 5 failed attempts
+- Rate limiting (100 requests/minute)
+- Input validation and sanitization
+            `)
+            .setVersion('1.0')
+            .addCookieAuth('access_token', {
+                type: 'apiKey',
+                in: 'cookie',
+                name: 'access_token',
+                description: 'JWT token stored in HTTP-only cookie',
+            })
+            .addBearerAuth({
+                type: 'http',
+                scheme: 'bearer',
+                bearerFormat: 'JWT',
+                in: 'header',
+                description: 'Alternative: Bearer token in Authorization header',
+            }, 'bearer-token')
+            .addTag('auth', 'Authentication & Authorization')
+            .addTag('users', 'User Profile Management')
+            .addTag('courses', 'Course Management')
+            .addTag('quizzes', 'Quiz & Assessment Management')
+            .addTag('forums', 'Discussion Forums')
+            .addTag('chat', 'Real-time Messaging')
+            .addTag('notifications', 'Notification System')
+            .addTag('analytics', 'Performance Analytics')
+            .addTag('admin', 'Admin Operations')
+            .addTag('audit', 'Audit Logging')
+            .build();
+
+        const document = SwaggerModule.createDocument(app, config, {});
+        SwaggerModule.setup('api', app, document, {
+            swaggerOptions: {
+                persistAuthorization: true,
+            },
+        });
     }
 
-    // Serve uploads at /uploads route
-    app.useStaticAssets(uploadsPath, {
-        prefix: '/uploads/',
-        // Add proper headers for video streaming
-        setHeaders: (res, path) => {
-            if (path.endsWith('.mp4') || path.endsWith('.webm')) {
-                res.setHeader('Accept-Ranges', 'bytes');
-                res.setHeader('Content-Type', 'video/mp4');
-            }
-            if (path.endsWith('.pdf')) {
-                res.setHeader('Content-Type', 'application/pdf');
-                res.setHeader('Content-Disposition', 'inline');
-            }
-        }
-    });
+    // Trust proxy for correct IP detection behind reverse proxy
+    const expressApp = app.getHttpAdapter().getInstance();
+    expressApp.set('trust proxy', 1);
 
-    const port = process.env.PORT || 5000;
+    // Disable X-Powered-By header
+    expressApp.disable('x-powered-by');
+
+    const port = Number(process.env.PORT) || 5000;
     await app.listen(port);
-    console.log(`Application is running on: http://localhost:${port}`);
+
+    console.log(`Application running on http://localhost:${port}`);
+    console.log(`Swagger API docs: http://localhost:${port}/api`);
+
 }
 
 bootstrap();

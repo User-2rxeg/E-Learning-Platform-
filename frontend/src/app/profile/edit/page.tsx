@@ -346,7 +346,7 @@ export default function ProfileEditPage() {
 // import { useRouter } from 'next/navigation';
 // import { useAuth } from '../../../contexts/AuthContext';
 // import {
-//     Camera, Save, X, User, Mail, Phone, MapPin,
+//     Camera, Save, X, user, Mail, Phone, MapPin,
 //     Globe, Github, Linkedin, Twitter, AlertCircle
 // } from 'lucide-react';
 //
@@ -504,7 +504,7 @@ export default function ProfileEditPage() {
 //                                             />
 //                                         ) : (
 //                                             <div className="w-full h-full flex items-center justify-center">
-//                                                 <User className="w-12 h-12 text-gray-400" />
+//                                                 <user className="w-12 h-12 text-gray-400" />
 //                                             </div>
 //                                         )}
 //                                     </div>

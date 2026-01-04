@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../contexts/AuthContext';
-import { courseService } from '../../../lib/services/courseApi';
+import { courseService } from '../../../lib/services/courses-api';
 import apiClient from '../../../lib/services/apiClient';
 import {
     BookOpen, Clock, TrendingUp, Award, Calendar, BarChart3,
@@ -305,7 +305,7 @@ export default function StudentDashboard() {
                     activities.push({
                         id: `activity-${course.courseId}`,
                         type: 'module_completed',
-                        title: 'Course Activity',
+                        title: 'courses Activity',
                         description: `Progress in ${course.courseTitle}`,
                         timestamp: course.lastActiveAt.toString(),
                         courseId: course.courseId,
@@ -330,8 +330,8 @@ export default function StudentDashboard() {
             {
                 id: '2',
                 type: 'quiz_completed',
-                title: 'Quiz Completed',
-                description: 'Scored 92% in JavaScript Quiz',
+                title: 'quiz Completed',
+                description: 'Scored 92% in JavaScript quiz',
                 timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
                 icon: Award,
                 color: 'text-blue-500',
@@ -370,7 +370,7 @@ export default function StudentDashboard() {
         const progressChartData = {
             labels: analytics.courses.map(c => c.courseTitle.substring(0, 15) + '...'),
             datasets: [{
-                label: 'Progress %',
+                label: 'progress-tracking %',
                 data: analytics.courses.map(c => c.progress),
                 backgroundColor: 'rgba(59, 130, 246, 0.5)',
                 borderColor: 'rgb(59, 130, 246)',
@@ -384,7 +384,7 @@ export default function StudentDashboard() {
                 new Date(p.date).toLocaleDateString('en', { month: 'short', day: 'numeric' })
             ) || [],
             datasets: [{
-                label: 'Quiz Scores',
+                label: 'quiz Scores',
                 data: analytics.performanceTrend?.map(p => p.score) || [],
                 borderColor: 'rgb(99, 102, 241)',
                 backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -412,7 +412,7 @@ export default function StudentDashboard() {
         };
 
         const skillsRadarData = {
-            labels: analytics.skillsProgress?.map(s => s.skill) || ['JavaScript', 'React', 'Node.js', 'Database', 'Testing'],
+            labels: analytics.skillsProgress?.map(s => s.skill) || ['JavaScript', 'React', 'Node.js', 'database', 'Testing'],
             datasets: [{
                 label: 'Skill Level',
                 data: analytics.skillsProgress?.map(s => s.level) || [85, 75, 60, 70, 50],
@@ -508,7 +508,7 @@ export default function StudentDashboard() {
                     </p>
                 </div>
 
-                {/* Quick Stats with Analytics Integration */}
+                {/* Quick Stats with analytics Integration */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
@@ -700,7 +700,7 @@ export default function StudentDashboard() {
 
                         {/* Right Column - Stats & Achievements */}
                         <div className="space-y-6">
-                            {/* Upcoming Quizzes */}
+                            {/* Upcoming quizzes */}
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-lg font-semibold text-gray-900">Upcoming Quizzes</h3>
@@ -824,7 +824,7 @@ export default function StudentDashboard() {
 
                 {activeTab === 'performance' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Skills Progress */}
+                        {/* Skills progress-tracking */}
                         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Skills Development</h3>
                             <div className="space-y-4">
@@ -851,7 +851,7 @@ export default function StudentDashboard() {
                             </div>
                         </div>
 
-                        {/* Quiz Performance */}
+                        {/* quiz performance */}
                         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Quiz Performance</h3>
                             <div className="grid grid-cols-2 gap-4">
@@ -886,7 +886,7 @@ export default function StudentDashboard() {
 
                 {activeTab === 'analytics' && chartData && (
                     <div className="space-y-6">
-                        {/* Analytics Charts */}
+                        {/* analytics Charts */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Progress</h3>
@@ -961,7 +961,7 @@ export default function StudentDashboard() {
                             </div>
                         </div>
 
-                        {/* Detailed Course Analytics */}
+                        {/* Detailed courses analytics */}
                         {analytics && (
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Details</h3>

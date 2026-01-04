@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
-import { adminService } from '../../../lib/services/adminApi';
+import { adminService } from '../../../lib/services/admin-api';
 import {
     Users,
     BookOpen,
@@ -131,7 +131,7 @@ export default function AdminDashboard() {
     const handleUserRoleChange = async (userId: string, newRole: string) => {
         try {
             await adminService.updateUserRole(userId, newRole);
-            alert('User role updated successfully');
+            alert('user role updated successfully');
             await fetchDashboardData();
         } catch (error) {
             console.error('Error updating user role:', error);
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
         if (confirm('Are you sure you want to permanently delete this course? This action cannot be undone.')) {
             try {
                 await adminService.deleteCourse(courseId);
-                alert('Course deleted successfully');
+                alert('courses deleted successfully');
                 await fetchDashboardData();
             } catch (error) {
                 console.error('Error deleting course:', error);

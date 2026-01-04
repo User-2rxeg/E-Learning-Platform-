@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 import { useAuth } from '../../../../../contexts/AuthContext';
-import {quizService} from "../../../../../lib/services/quizApi";
+import {quizService} from "../../../../../lib/services/quizzes-api";
 
 // classnames helper
 function cn(...classes: Array<string | false | null | undefined>) {
@@ -49,7 +49,7 @@ export default function QuizPage() {
     const courseId = params.id as string;
     const quizId = params.quizId as string;
 
-    // Quiz State
+    // quiz State
     const [loading, setLoading] = useState(true);
     const [quizTitle, setQuizTitle] = useState('');
     const [questions, setQuestions] = useState<Question[]>([]);
@@ -95,7 +95,7 @@ export default function QuizPage() {
     const fetchQuizData = async () => {
         try {
             setLoading(true);
-            const quiz = await quizService.getQuiz(quizId);    setQuizTitle(quiz.title || 'Quiz');
+            const quiz = await quizService.getQuiz(quizId);    setQuizTitle(quiz.title || 'quiz');
             setQuestions(quiz.questions.map(q => ({
                 ...q,
                 correctAnswer: undefined // Don't show answers to client
@@ -260,7 +260,7 @@ export default function QuizPage() {
     return (
         <div className="quiz-container">
             <div className="quiz-quizContainer">
-                {/* Quiz Header */}
+                {/* quiz Header */}
                 <div className="quiz-quizHeader">
                     <div className="quiz-headerLeft">
                         <h2 className="quiz-quizName">{quizTitle}</h2>
@@ -277,7 +277,7 @@ export default function QuizPage() {
                     </div>
                 </div>
 
-                {/* Progress Bar */}
+                {/* progress-tracking Bar */}
                 <div className="quiz-progressBar">
                     <div className="quiz-progressFill" style={{ width: `${progress}%` }} />
                 </div>

@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { VideoPlayer } from '../../../../components/VideoPlayer';
-import { courseService } from '../../../../lib/services/courseApi';
+import { courseService } from '../../../../lib/services/courses-api';
 import { useAuth } from '../../../../contexts/AuthContext';
-import {certificateService} from "../../../../lib/services/certficateService";
+import {certificateService} from "../../../../lib/services/certficate-service";
 // Removed unused PDFViewer import
 // import { PDFViewer } from '../../../../components/PDFLoader';
 
@@ -67,7 +67,7 @@ export default function CourseLearnPage() {
     const { user } = useAuth();
     const courseId = params.id as string;
 
-    // Course State
+    // courses State
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
     const [isEnrolled, setIsEnrolled] = useState(false);
@@ -81,7 +81,7 @@ export default function CourseLearnPage() {
     const [certificateGenerating, setCertificateGenerating] = useState(false);
     const [certificateId, setCertificateId] = useState<string | null>(null);
 
-    // Progress State
+    // progress-tracking State
     const [progress, setProgress] = useState<CourseProgress>({
         completedResources: [],
         currentModule: 0,
@@ -914,10 +914,10 @@ export default function CourseLearnPage() {
 // import { useParams, useRouter } from 'next/navigation';
 // import Link from 'next/link';
 // import { VideoPlayer } from '../../../../components/VideoPlayer';
-// import { courseService } from '../../../../lib/services/courseApi';
+// import { courseService } from '../../../../lib/service/courseApi';
 // import { useAuth } from '../../../../contexts/AuthContext';
-// import {PDFViewer} from "../../../../Components/PDFLoader";
-// import {certificateService} from "../../../../lib/services/certficateService";
+// import {PDFViewer} from "../../../../components/PDFLoader";
+// import {certificateService} from "../../../../lib/service/certficateService";
 //
 //
 // interface Resource {
@@ -937,7 +937,7 @@ export default function CourseLearnPage() {
 //     notesEnabled?: boolean;
 // }
 //
-// interface Course {
+// interface courses {
 //     _id: string;
 //     title: string;
 //     description: string;
@@ -976,8 +976,8 @@ export default function CourseLearnPage() {
 //     const { user } = useAuth();
 //     const courseId = params.id as string;
 //
-//     // Course State
-//     const [course, setCourse] = useState<Course | null>(null);
+//     // courses State
+//     const [course, setCourse] = useState<courses | null>(null);
 //     const [loading, setLoading] = useState(true);
 //     const [isEnrolled, setIsEnrolled] = useState(false);
 //     const [error, setError] = useState<string | null>(null);
@@ -990,7 +990,7 @@ export default function CourseLearnPage() {
 //     const [certificateGenerating, setCertificateGenerating] = useState(false);
 //     const [certificateId, setCertificateId] = useState<string | null>(null);
 //
-//     // Progress State
+//     // progress-tracking State
 //     const [progress, setProgress] = useState<CourseProgress>({
 //         completedResources: [],
 //         currentModule: 0,
@@ -1263,13 +1263,13 @@ export default function CourseLearnPage() {
 //     if (error) {
 //         return (
 //             <div className="learn-errorContainer">
-//                 <h2>Error Loading Course</h2>
+//                 <h2>Error Loading courses</h2>
 //                 <p>{error}</p>
 //                 <button onClick={fetchCourseDetails} className="learn-retryButton">
 //                     Try Again
 //                 </button>
 //                 <Link href={`/courses/${courseId}`} className="learn-backButton">
-//                     Back to Course Details
+//                     Back to courses Details
 //                 </Link>
 //             </div>
 //         );
@@ -1281,7 +1281,7 @@ export default function CourseLearnPage() {
 //                 <h2>Access Denied</h2>
 //                 <p>You need to be enrolled in this course to access the content.</p>
 //                 <Link href={`/courses/${courseId}`} className="learn-backButton">
-//                     Back to Course Details
+//                     Back to courses Details
 //                 </Link>
 //             </div>
 //         );
@@ -1328,7 +1328,7 @@ export default function CourseLearnPage() {
 //                 {/* Sidebar */}
 //                 <aside className={cn('learn-sidebar', !sidebarOpen && 'learn-sidebarClosed')}>
 //                     <div className="learn-sidebarContent">
-//                         <h3 className="learn-sidebarTitle">Course Content</h3>
+//                         <h3 className="learn-sidebarTitle">courses Content</h3>
 //
 //                         <div className="learn-modulesList">
 //                             {course.modules.map((module, moduleIndex) => (
@@ -1416,7 +1416,7 @@ export default function CourseLearnPage() {
 //                                                         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
 //                                                     />
 //                                                 </svg>
-//                                                 <span>Take Quiz</span>
+//                                                 <span>Take quiz</span>
 //                                             </Link>
 //                                         )}
 //                                     </div>

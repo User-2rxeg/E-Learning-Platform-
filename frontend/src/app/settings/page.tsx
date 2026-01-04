@@ -435,7 +435,7 @@ export default function SettingsPage() {
                                         {Object.entries({
                                             emailNotifications: 'Email Notifications',
                                             pushNotifications: 'Push Notifications',
-                                            courseUpdates: 'Course Updates',
+                                            courseUpdates: 'courses Updates',
                                             promotionalEmails: 'Promotional Emails',
                                             weeklyDigest: 'Weekly Digest',
                                             instantMessages: 'Instant Messages'

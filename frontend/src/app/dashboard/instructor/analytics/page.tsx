@@ -1,7 +1,7 @@
 // src/app/instructor/analytics/page.tsx - NEW FILE
 'use client';
 import { useState, useEffect } from 'react';
-import apiClient from "../../../../lib/services/apiC";
+import apiClient from "../../../../lib/services/api-client";
 import {useAuth} from "../../../../contexts/AuthContext";
 import { Bar } from 'react-chartjs-2';
 
@@ -115,7 +115,7 @@ export default function InstructorAnalytics() {
                 </div>
             </div>
 
-            {/* Course Selector */}
+            {/* courses Selector */}
             <div className="course-selector">
                 <label>Select Course:</label>
                 <select
@@ -135,7 +135,7 @@ export default function InstructorAnalytics() {
                 </div>
             </div>
 
-            {/* Course Report */}
+            {/* courses Report */}
             {courseReport && (
                 <div className="course-report">
                     <h2>{courseReport.course.title} - Detailed Report</h2>

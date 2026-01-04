@@ -22,7 +22,7 @@ import {
     Image as ImageIcon,
     File
 } from 'lucide-react';
-import apiClient from "../../lib/services/apiC";
+import apiClient from "../../lib/services/api-client";
 interface Message {
     id: string;
     sender: string;
@@ -248,7 +248,7 @@ export default function MessagesPage() {
             return conversation.groupName || 'Group Chat';
         }
         const other = getOtherParticipant(conversation);
-        return other?.name || 'Unknown User';
+        return other?.name || 'Unknown user';
     };
     const getConversationAvatar = (conversation: Conversation) => {
         if (conversation.isGroup) {
@@ -532,7 +532,7 @@ export default function MessagesPage() {
                     </button>
                 </div>
 
-                {/* User Search */}
+                {/* user Search */}
                 <div className="mb-4">
                     <input
                         type="text"
@@ -579,7 +579,7 @@ export default function MessagesPage() {
                     </div>
                 )}
 
-                {/* User List */}
+                {/* user List */}
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                     {filteredUsers.map(user => (
                         <button

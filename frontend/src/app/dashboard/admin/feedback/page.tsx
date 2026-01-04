@@ -30,7 +30,7 @@ import {
     FileText,
     X
 } from 'lucide-react';
-import {Feedback, feedbackService} from "../../../../lib/services/feedbackApi";
+import {Feedback, feedbackService} from "../../../../lib/services/feedback-api";
 import {useAuth} from "../../../../contexts/AuthContext";
 
 interface FeedbackStats {

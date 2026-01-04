@@ -1,161 +1,404 @@
-Features:
+# E-Learning Platform
 
-1. User Management
+A comprehensive, secure, and scalable e-learning platform built with NestJS, MongoDB, and modern security practices following OWASP guidelines.
 
-• User Authentication and Role-Based Access Control:
-– Students, instructors, and admins with distinct access levels.
-– Secure login and registration using JSON Web Tokens (JWT).
+---
 
-• User Profile Management:
-– Students and instructors can update their personal information, view enrolled courses, trackcompleted courses, and monitor average scores.
+## 📋 Table of Contents
 
-2. Course Management
+- [Overview](#-overview)
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Technology Stack](#-technology-stack)
+- [Getting Started](#-getting-started)
+- [API Documentation](#-api-documentation)
+- [Security](#-security)
+- [User Roles & Account Status](#-user-roles--account-status)
+- [Modules](#-modules)
+- [Environment Variables](#-environment-variables)
+- [Business Rules](#-business-rules)
+- [Contributing](#-contributing)
 
-• Course Creation and Organization:
-– Instructors can create course modules, upload multimedia resources (videos, PDFs), and organize content hierarchically.
+---
 
-• Version Control:
-– Enable instructors to update course content while maintaining access to previous versions.
+## 🎯 Overview
 
-• Search Functionality:
-– Users can search for a certain course.
-– Instructors can search for a certain student.
-– Students can search for a certain instructor.
+This E-Learning Platform provides a complete solution for online education, featuring:
 
+- **Multi-role support** for Students, Instructors, and Administrators
+- **Adaptive learning** with intelligent quiz difficulty adjustment
+- **Real-time communication** via chat and discussion forums
+- **Comprehensive analytics** for tracking progress and engagement
+- **Enterprise-grade security** with JWT (HTTP-only cookies), RBAC, rate limiting, and audit logging
+- **Account lifecycle management** with status-based access control
 
-3. Interactive Modules
+---
 
-• Quizzes and Assessments:
-– Adaptive quizzes dynamically adjust question diﬃculty based on user performance.
+## ✨ Features
 
-• Real-Time Feedback:
-– Instant feedback on quizzes, highlighting correct answers and areas for improvement.
+### 1. User Management
+| Feature | Description |
+|---------|-------------|
+| **Authentication** | JWT-based authentication with HTTP-only cookies |
+| **Email Verification** | 6-digit OTP with 10-minute expiry |
+| **Role-Based Access Control** | Three roles: Student, Instructor, Admin |
+| **Account Status Management** | Active, Inactive, Locked, Suspended, Terminated |
+| **Profile Management** | Update personal info, learning preferences, expertise |
+| **Account Security** | Password hashing (bcrypt-12), account lockout, MFA support |
 
+### 2. Course Management
+| Feature | Description |
+|---------|-------------|
+| **Course Creation** | Hierarchical modules with multimedia resources |
+| **Resource Types** | Videos, PDFs, and external links |
+| **Version Control** | Track changes with version history |
+| **Search & Discovery** | Search by title, instructor, tags |
+| **Enrollment System** | Student enrollment with confirmation notifications |
+| **Course Archiving** | Archive outdated courses |
 
-4. Performance Tracking
+### 3. Interactive Learning
+| Feature | Description |
+|---------|-------------|
+| **Adaptive Quizzes** | Dynamic difficulty based on performance |
+| **Instant Feedback** | Immediate quiz results with explanations |
+| **Quick Notes** | Personal note-taking for each module |
+| **Progress Tracking** | Track completion, scores, engagement |
 
-• Student Dashboard:
-– Visualizes progress with metrics like course completion rates, average scores, and engagement trends.
+### 4. Communication
+| Feature | Description |
+|---------|-------------|
+| **Real-Time Chat** | Direct messaging and group study chats |
+| **Discussion Forums** | Course-specific threaded discussions |
+| **Notifications** | Course updates, announcements (Admin/Instructor only) |
+| **Chat History** | Persistent conversation storage |
 
-• Instructor Analytics:
-– Reports on student engagement, content eﬀectiveness, and assessment results.
-– Downloadable analytics for external use.
+### 5. Analytics & Reporting
+| Feature | Description |
+|---------|-------------|
+| **Student Dashboard** | Progress metrics, completion rates, scores |
+| **Instructor Analytics** | Engagement reports, performance data |
+| **Export Options** | CSV/JSON export for external analysis |
+| **Admin Metrics** | Platform-wide statistics, security overview, account status breakdown |
 
+### 6. Security & Compliance (OWASP)
+| Feature | Description |
+|---------|-------------|
+| **JWT Authentication** | HTTP-only cookies (Secure, SameSite=Strict in production) |
+| **Rate Limiting** | 100 requests/minute per IP (Throttler) |
+| **Account Lockout** | Auto-lock after 5 failed login attempts (30 min) |
+| **Audit Logging** | Comprehensive activity tracking |
+| **Data Backup** | Scheduled automated backups |
+| **Security Headers** | Helmet.js (XSS, CSP, HSTS, etc.) |
+| **Input Validation** | Whitelist validation, sanitization, NoSQL injection prevention |
 
-5. Security and Data Protection
+---
 
-• Secure Authentication:
-– Use JSON Web Tokens (JWT) for secure login and session management.
-– Passwords stored with hashing using bcrypt to ensure data integrity.
+## 🏗 Architecture
 
-• Role-Based Access Control (RBAC):
-– Implement middleware in the backend to control access to APIs based on user roles (student,
-instructor, admin).
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Frontend (Next.js)                      │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    API Gateway (NestJS)                      │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────────┐│
+│  │   Guards    │ │   Pipes     │ │    Interceptors          ││
+│  │ - Auth      │ │ - Validate  │ │    - Logging             ││
+│  │ - RBAC      │ │ - Sanitize  │ │    - Transform           ││
+│  │ - Throttle  │ │             │ │                          ││
+│  │ - Status    │ │             │ │                          ││
+│  └─────────────┘ └─────────────┘ └─────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     Service Layer                            │
+│  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐   │
+│  │   Auth    │ │  Courses  │ │  Quizzes  │ │   Users   │   │
+│  └───────────┘ └───────────┘ └───────────┘ └───────────┘   │
+│  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐   │
+│  │   Chat    │ │   Forum   │ │  Notifs   │ │ Analytics │   │
+│  └───────────┘ └───────────┘ └───────────┘ └───────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     MongoDB Database                         │
+│  Collections: Users, Courses, Quizzes, Forums, Messages...  │
+└─────────────────────────────────────────────────────────────┘
+```
 
-• Data Backup:
-– Simple scheduled backups of critical data (e.g., user accounts, course progress) to prevent loss.
+---
 
+## 🛠 Technology Stack
 
-6. Communication Features
+| Layer | Technology |
+|-------|------------|
+| **Backend Framework** | NestJS (Node.js, TypeScript) |
+| **Database** | MongoDB with Mongoose ODM |
+| **Authentication** | JWT (HTTP-only cookies) + bcrypt |
+| **API Documentation** | Swagger/OpenAPI |
+| **Security** | Helmet, Throttler, CORS, Input Validation |
+| **Scheduling** | @nestjs/schedule (Cron jobs) |
+| **Validation** | class-validator, class-transformer |
 
-• Real-Time Chat:
-– Enable Instructors to communicate with students for queries and discussions.
-– Students can also form study groups and chat with peers.
+---
 
-• Discussion Forums:
-– Forums for course-specific discussions moderated by instructors.
-– Features include thread creation, replies, and search functionality.
+## 🚀 Getting Started
 
-• Notification System:
-– Students and instructors receive notifications for new messages, replies, or announcements.
+### Prerequisites
 
-• Saved Conversations:
-– Chat history and forum discussions are saved for future reference.
+- Node.js 18+
+- MongoDB 6+
+- npm or yarn
 
+### Installation
 
-Additional Features:
+```bash
+# Clone the repository
+git clone https://github.com/your-org/e-learning-platform.git
 
-a) Data Science: Adaptive Recommendation Engine: An AI-powered recommendation system tailors content to user preferences, performance metrics, and engagement patterns.
+# Navigate to backend
+cd e-learning-platform/backend
 
-b) Information Security: Biometric Authentication: Provides robust identity verification for exams and other critical operations.
+# Install dependencies
+npm install
 
-c) Software Engineering: Quick Notes:Allow users to create and save quick notes for their coursesor modules. This feature provides students with a personal space to jot down key points, reminders,or study tips as they navigate the course.
+# Configure environment
+cp .env.example .env
+# Edit .env with your configuration
 
+# Run development server
+npm run start:dev
+```
 
-User Stories
+### Environment Setup
 
-1. User Management
+Create a `.env` file:
 
-• As a student, I want to securely log in and access my course progress.
-• As an instructor, I want to create and manage student accounts and assign them to courses.
+```env
+# Database
+DATABASE_CONNECTION=mongodb://localhost:27017/elearning
 
-2. Course Management
+# JWT
+JWT_SECRET=your-super-secret-key-min-32-chars
+JWT_EXPIRES_IN=7d
 
-• As an instructor, I want to create, update, and organize course modules with resources and quizzes.
-• As a student, I want personalized learning paths to guide my progress eﬀectively.
+# Server
+PORT=5000
+NODE_ENV=development
 
+# Email (for OTP)
+MAIL_HOST=smtp.example.com
+MAIL_USER=your-email@example.com
+MAIL_PASS=your-email-password
 
-3. Interactive Modules
-• As a student, I want immediate feedback on quizzes to understand my mistakes.
-• As an instructor, I want to create adaptive quizzes that challenge students based on their skills.
+# Security
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3999
 
+# Backup
+BACKUP_DIR=./backups
+```
 
-4. Performance Tracking
+---
 
-• As a student, I want a dashboard to visualize my progress and engagement metrics.
-• As an instructor, I want analytics on student performance to identify areas needing improvement.
+## 📚 API Documentation
 
+Access Swagger documentation at: `http://localhost:5000/api`
 
-5. Security and Data Protection
+### Authentication
+- Uses **HTTP-Only Cookie Authentication**
+- After login, `access_token` cookie is automatically set
+- Cookie settings: `HttpOnly; Secure (prod); SameSite=Strict (prod)`
 
-• Students:
-– As a student, I want my account to be securely protected against unauthorized access.
+### Main Endpoints
 
-• Instructors:
-– As aninstructor,Iwant role-based access tomanage onlythe courses and users I am responsible for.
+| Module | Base Path | Description |
+|--------|-----------|-------------|
+| Auth | `/auth` | Registration, login, OTP, password reset |
+| Users | `/users` | User profile management |
+| Courses | `/courses` | Course CRUD, enrollment, resources |
+| Quizzes | `/quizzes` | Quiz management |
+| Quiz Attempts | `/quiz-attempts` | Take and review quizzes |
+| Forums | `/forums` | Discussion threads and posts |
+| Chat | `/chat` | Messaging and conversations |
+| Notifications | `/notifications` | User notifications |
+| Progress | `/progress` | Progress tracking |
+| Notes | `/notes` | Quick notes |
+| Analytics | `/analytics` | Performance analytics |
+| Admin | `/admin` | Admin operations |
+| Backups | `/api/backups` | Backup management |
+| Audit | `/audit` | Audit logs |
 
-• Admins:
-– As an admin, I want a simple logging system to track failed login attempts or unauthorized API access.
+---
 
+## 🔒 Security
 
-6. Communication Features
+### Authentication Flow
 
-• As a student , I want to chat with peers to clarify doubts or discuss topics.
-• As an instructor, I want to communicate with students via chat or discussion forums to answerquestions and guide discussions.
+```
+1. User registers → Email verification OTP sent
+2. User verifies OTP → Account activated (status: ACTIVE)
+3. User logs in → JWT cookie set (HttpOnly, Secure, SameSite)
+4. Each request → Token validated + Account status checked
+5. 5 failed logins → Account LOCKED for 30 minutes
+6. Logout → Token blacklisted, cookie cleared
+```
 
+### Security Features (OWASP Compliant)
 
-Additional Features User Stories
+| Feature | Implementation |
+|---------|----------------|
+| **A01 - Broken Access Control** | RBAC guards, account status checks |
+| **A02 - Cryptographic Failures** | bcrypt-12, JWT with secure cookies |
+| **A03 - Injection** | Input validation, sanitization, parameterized queries |
+| **A04 - Insecure Design** | Defense in depth, principle of least privilege |
+| **A05 - Security Misconfiguration** | Helmet.js, proper CORS, no debug in prod |
+| **A06 - Vulnerable Components** | Regular dependency updates |
+| **A07 - Authentication Failures** | Account lockout, secure session management |
+| **A08 - Software Integrity** | Input validation, content-type checks |
+| **A09 - Logging Failures** | Comprehensive audit logging |
+| **A10 - SSRF** | Input validation, URL sanitization |
 
-Data Science: Adaptive Learning Recommendation Engine
+### Security Headers (Helmet.js)
 
-• Students:
-– As a student, I want to receive recommendations for additional courses or materials that match my learning progress and interests.
-– As a student, I want personalized suggestions to help me identify areas I need to improve.
+- `X-Frame-Options: DENY`
+- `X-Content-Type-Options: nosniff`
+- `X-XSS-Protection: 1; mode=block`
+- `Strict-Transport-Security: max-age=31536000`
+- `Content-Security-Policy: default-src 'self'`
 
-Information Security: Biometric Authentication
+---
 
-• Students:
-– As a student, I want to use biometric authentication during exams to secure my identity.
-– As a student, I want to know my biometric data is encrypted and safe.
+## 👥 User Roles & Account Status
 
-• Admins:
-– As an admin, I want to enforce biometric authentication for high-stakes actions to maintain
-exam integrity.
+### Roles (Enum: UserRole)
 
-Software Engineering: Quick Notes
-• Students:
-– As a student, I want to create notes tied to specific modules to organize my learning eﬀectively.
-– As a student, I want my notes to autosave to prevent data loss.
-– As a student, I want to edit and delete my notes to keep them updated and relevant.
+| Role | Permissions |
+|------|-------------|
+| **STUDENT** | Browse, enroll, learn, take quizzes, participate in forums/chat |
+| **INSTRUCTOR** | Create courses/quizzes, view analytics, send course notifications |
+| **ADMIN** | Full access, user management, platform announcements, security monitoring |
 
-• Instructors:
-– As an instructor, I want students to have a personal space to take notes to enhance their learning process.
+### Account Status (Enum: AccountStatus)
 
+| Status | Description | Access |
+|--------|-------------|--------|
+| **ACTIVE** | Normal active account | Full access |
+| **INACTIVE** | Manually deactivated | Blocked |
+| **LOCKED** | Security lockout (5 failed logins) | Blocked (auto-unlock after 30 min) |
+| **SUSPENDED** | Admin suspension | Blocked |
+| **TERMINATED** | Permanently terminated | Blocked |
 
-Technology Stack
-• Backend: NestJS (Node.js, TypeScript).
-• Frontend: Next.js.
-• Database: MongoDB for flexible and scalable storage.
-• Data Science: Python-based recommendation engine served via Flask or FastAPI.
-• Authentication: JSON Web Tokens (JWT) and bcrypt for secure login.
-• Security: Multi-Factor Authentication (MFA).
+---
+
+## 📦 Modules
+
+| Module | Status | Description |
+|--------|--------|-------------|
+| Auth | ✅ | JWT cookies, OTP, password reset, account status |
+| Users | ✅ | Profile management, search |
+| Courses | ✅ | CRUD, enrollment, resources, archiving |
+| Quizzes | ✅ | Adaptive quizzes with difficulty levels |
+| Quiz Attempts | ✅ | Take quizzes, instant feedback |
+| Forums | ✅ | Threads, posts, likes |
+| Chat | ✅ | Direct & group messaging |
+| Notifications | ✅ | Admin/Instructor only sending |
+| Quick Notes | ✅ | Personal note-taking |
+| Progress Tracking | ✅ | Course progress |
+| Analytics | ✅ | Student & instructor stats |
+| Admin | ✅ | User management, status control, metrics |
+| Backup | ✅ | Automated backups |
+| Audit Log | ✅ | Activity logging |
+| Security | ✅ | Rate limit, lockout, headers |
+
+---
+
+## ⚙️ Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_CONNECTION` | Yes | - | MongoDB connection string |
+| `JWT_SECRET` | Yes | - | Secret for signing JWTs (min 32 chars) |
+| `JWT_EXPIRES_IN` | No | `7d` | Token expiration |
+| `PORT` | No | `5000` | Server port |
+| `NODE_ENV` | No | `development` | Environment mode |
+| `MAIL_HOST` | Yes | - | SMTP server host |
+| `MAIL_USER` | Yes | - | SMTP username |
+| `MAIL_PASS` | Yes | - | SMTP password |
+| `ALLOWED_ORIGINS` | No | `localhost:*` | CORS origins (comma-separated) |
+| `BACKUP_DIR` | No | `./backups` | Backup directory |
+| `ENABLE_SWAGGER` | No | `true` | Enable Swagger in production |
+
+---
+
+## 📋 Business Rules
+
+### Authentication
+1. ✅ Email must be unique and valid format
+2. ✅ Password minimum 8 characters
+3. ✅ OTP expires after 10 minutes
+4. ✅ OTP resend cooldown: 2 minutes
+5. ✅ Account locked after 5 failed login attempts (30 min)
+6. ✅ Email must be verified before login
+7. ✅ All account statuses except ACTIVE block access
+
+### Courses
+1. ✅ Only students can enroll in courses
+2. ✅ Cannot enroll twice in same course
+3. ✅ Only instructors can create/modify their own courses
+4. ✅ Admins can override any restriction
+5. ✅ Course must be "active" to allow enrollment
+
+### Quizzes
+1. ✅ Adaptive difficulty based on performance:
+   - Score ≥ 80% → Next: Hard
+   - Score 50-79% → Next: Medium
+   - Score < 50% → Next: Easy
+
+### Notifications
+1. ✅ Only Admins can send platform-wide announcements
+2. ✅ Only Admins and Instructors can send course notifications
+3. ✅ Students can only view their own notifications
+
+### Forums
+1. ✅ Must be enrolled to participate in course forums
+2. ✅ Only owners can delete their posts/threads
+3. ✅ Like toggles (like/unlike)
+
+---
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+```
+
+---
+
+## 📝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Built with ❤️ for learners everywhere**

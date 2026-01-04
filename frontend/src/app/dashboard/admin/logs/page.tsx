@@ -29,7 +29,7 @@ import {
     X
 } from 'lucide-react';
 import { useAuth } from "../../../../contexts/AuthContext";
-import { adminService } from "../../../../lib/services/adminApi";
+import { adminService } from "../../../../lib/services/admin-api";
 
 interface AuditLog {
     _id: string;
@@ -156,7 +156,7 @@ export default function AdminLogs() {
                 _id: '2',
                 userId: 'admin456',
                 userEmail: 'admin@example.com',
-                userName: 'Admin User',
+                userName: 'admin user',
                 action: 'create_user',
                 resource: 'users',
                 resourceId: 'user789',
