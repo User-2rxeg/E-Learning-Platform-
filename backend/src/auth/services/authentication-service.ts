@@ -56,7 +56,7 @@ export class AuthService {
         };
     }
 
-    // Get account status for auth guard
+    // Get account status for server guard
     async getAccountStatus(userId: string): Promise<AccountStatus> {
         const user = await this.userModel.findById(userId).select('status lockedUntil').lean();
         if (!user) return AccountStatus.TERMINATED;

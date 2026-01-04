@@ -41,22 +41,24 @@ async function bootstrap() {
         },
     }));
 
-    // CORS configuration - OWASP compliant
-    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
-        'http://localhost:3999',
-        'http://localhost:3000',
-        'http://localhost:5000',
-    ];
+    // // CORS configuration - OWASP compliant
+    // const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+    //     'http://localhost:3999',
+    //     'http://localhost:3000',
+    //     'http://localhost:5000',
+    // ];
+
+    // origin: (origin, callback) => {
+    //     // Allow requests with no origin (mobile apps, curl, etc.)
+    //     if (!origin || allowedOrigins.includes(origin)) {
+    //         callback(null, true);
+    //     } else {
+    //         callback(new Error('Not allowed by CORS'));
+    //     }
+    // },
 
     app.enableCors({
-        origin: (origin, callback) => {
-            // Allow requests with no origin (mobile apps, curl, etc.)
-            if (!origin || allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
+        origin: true,
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
