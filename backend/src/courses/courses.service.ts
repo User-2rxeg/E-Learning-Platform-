@@ -471,16 +471,22 @@ export class CoursesService {
         const { courseId, moduleIndex, fileUrl, mimetype, filename, size, requester } = opts;
 
         const course = await this.courseModel.findById(courseId).exec();
-        if (!course) throw new NotFoundException('courses not found');
+        if (!course) throw new NotFoundException('Course not found');
 
         this.ensureAuthOnCourse(course, requester);
 
+        // Get the module ID from the course's modules array
         if (!course.modules?.[moduleIndex]) {
             throw new BadRequestException('Invalid module index');
         }
 
+        const moduleId = course.modules[moduleIndex];
+        const module = await this.moduleModel.findById(moduleId).exec();
+        if (!module) throw new NotFoundException('Module not found');
+
         const resourceType = this.inferResourceType(mimetype);
         const resource = {
+            title: filename || 'Untitled Resource',
             resourceType,
             url: fileUrl,
             filename,
@@ -488,13 +494,15 @@ export class CoursesService {
             size,
             uploadedBy: new Types.ObjectId(requester.sub),
             uploadedAt: new Date(),
+            order: module.resources?.length || 0,
+            isPublished: true,
         };
 
-        course.modules[moduleIndex].resources.push(resource as any);
-        await course.save();
+        module.resources.push(resource as any);
+        await module.save();
 
         // Return the document we just added (last element)
-        const added = course.modules[moduleIndex].resources[course.modules[moduleIndex].resources.length - 1];
+        const added = module.resources[module.resources.length - 1];
         return {
             courseId: String(course._id),
             moduleIndex,
@@ -513,7 +521,7 @@ export class CoursesService {
     }) {
         const { courseId, moduleIndex, url, requester } = opts;
         const course = await this.courseModel.findById(courseId).exec();
-        if (!course) throw new NotFoundException('courses not found');
+        if (!course) throw new NotFoundException('Course not found');
 
         this.ensureAuthOnCourse(course, requester);
 
@@ -521,7 +529,12 @@ export class CoursesService {
             throw new BadRequestException('Invalid module index');
         }
 
+        const moduleId = course.modules[moduleIndex];
+        const module = await this.moduleModel.findById(moduleId).exec();
+        if (!module) throw new NotFoundException('Module not found');
+
         const resource = {
+            title: 'External Link',
             resourceType: 'link' as const,
             url,
             filename: undefined,
@@ -529,12 +542,14 @@ export class CoursesService {
             size: undefined,
             uploadedBy: new Types.ObjectId(requester.sub),
             uploadedAt: new Date(),
+            order: module.resources?.length || 0,
+            isPublished: true,
         };
 
-        course.modules[moduleIndex].resources.push(resource as any);
-        await course.save();
+        module.resources.push(resource as any);
+        await module.save();
 
-        const added = course.modules[moduleIndex].resources[course.modules[moduleIndex].resources.length - 1];
+        const added = module.resources[module.resources.length - 1];
         return {
             courseId: String(course._id),
             moduleIndex,
@@ -546,17 +561,20 @@ export class CoursesService {
     }
 
     async listResources(courseId: string, moduleIndex: number) {
-        const course = await this.courseModel
-            .findById(courseId)
-            .select({ modules: 1, title: 1 })
-            .exec();
-        if (!course) throw new NotFoundException('courses not found');
+        const course = await this.courseModel.findById(courseId).exec();
+        if (!course) throw new NotFoundException('Course not found');
+
         if (!course.modules?.[moduleIndex]) {
             throw new NotFoundException('Module not found');
         }
 
-        const resources = course.modules[moduleIndex].resources.map((r: any) => ({
+        const moduleId = course.modules[moduleIndex];
+        const module = await this.moduleModel.findById(moduleId).exec();
+        if (!module) throw new NotFoundException('Module not found');
+
+        const resources = (module.resources || []).map((r: any) => ({
             id: String(r._id),
+            title: r.title,
             resourceType: r.resourceType,
             url: r.url,
             filename: r.filename,
@@ -576,15 +594,22 @@ export class CoursesService {
 
     async getResource(courseId: string, moduleIndex: number, resourceId: string) {
         const course = await this.courseModel.findById(courseId).exec();
-        if (!course) throw new NotFoundException('courses not found');
-        const mod = course.modules?.[moduleIndex];
-        if (!mod) throw new NotFoundException('Module not found');
+        if (!course) throw new NotFoundException('Course not found');
 
-        const res = mod.resources.find((r: any) => String(r._id) === resourceId);
+        if (!course.modules?.[moduleIndex]) {
+            throw new NotFoundException('Module not found');
+        }
+
+        const moduleId = course.modules[moduleIndex];
+        const module = await this.moduleModel.findById(moduleId).exec();
+        if (!module) throw new NotFoundException('Module not found');
+
+        const res = module.resources.find((r: any) => String(r._id) === resourceId);
         if (!res) throw new NotFoundException('Resource not found');
 
         return {
             id: String((res as any)._id),
+            title: res.title,
             resourceType: res.resourceType,
             url: res.url,
             filename: res.filename,
@@ -603,20 +628,25 @@ export class CoursesService {
     }) {
         const { courseId, moduleIndex, resourceId, requester } = opts;
         const course = await this.courseModel.findById(courseId).exec();
-        if (!course) throw new NotFoundException('courses not found');
+        if (!course) throw new NotFoundException('Course not found');
 
         this.ensureAuthOnCourse(course, requester);
 
-        const mod = course.modules?.[moduleIndex];
-        if (!mod) throw new NotFoundException('Module not found');
+        if (!course.modules?.[moduleIndex]) {
+            throw new NotFoundException('Module not found');
+        }
 
-        const idx = mod.resources.findIndex((r: any) => String(r._id) === resourceId);
+        const moduleId = course.modules[moduleIndex];
+        const module = await this.moduleModel.findById(moduleId).exec();
+        if (!module) throw new NotFoundException('Module not found');
+
+        const idx = module.resources.findIndex((r: any) => String(r._id) === resourceId);
         if (idx === -1) throw new NotFoundException('Resource not found');
 
-        // optionally capture the removed doc for audit
-        const removed = mod.resources[idx] as any;
-        mod.resources.splice(idx, 1);
-        await course.save();
+        // capture the removed doc for response
+        const removed = module.resources[idx] as any;
+        module.resources.splice(idx, 1);
+        await module.save();
 
         return {
             removed: true,
@@ -635,14 +665,18 @@ export class CoursesService {
 
     async listModuleResources(courseId: string, moduleIndex: number) {
         const course = await this.courseModel.findById(courseId);
-        if (!course) throw new NotFoundException('courses not found');
+        if (!course) throw new NotFoundException('Course not found');
 
         if (moduleIndex < 0 || moduleIndex >= course.modules.length) {
             throw new BadRequestException('Invalid module index');
         }
 
+        const moduleId = course.modules[moduleIndex];
+        const module = await this.moduleModel.findById(moduleId).exec();
+        if (!module) throw new NotFoundException('Module not found');
+
         return {
-            resources: course.modules[moduleIndex].resources || []
+            resources: module.resources || []
         };
     }
 

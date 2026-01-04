@@ -4,11 +4,64 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { Request, Response, NextFunction } from 'express';
 
 const cookieParser = require('cookie-parser');
 
+// Request Logger Middleware
+function requestLogger(req: Request, res: Response, next: NextFunction) {
+    const startTime = Date.now();
+    const { method, url, originalUrl, path } = req;
+    const userAgent = req.get('user-agent') || 'Unknown';
+    const ip = req.ip || req.socket.remoteAddress;
+    const authHeader = req.get('authorization') ? 'Bearer [PRESENT]' : '[NONE]';
+    const cookies = req.cookies ? Object.keys(req.cookies).join(', ') || '[NONE]' : '[NONE]';
+
+    // Log incoming request
+    console.log('\n========================================');
+    console.log(`INCOMING REQUEST`);
+    console.log(`========================================`);
+    console.log(`Time: ${new Date().toISOString()}`);
+    console.log(`Method: ${method}`);
+    console.log(`URL: ${originalUrl || url}`);
+    console.log(`Path: ${path}`);
+    console.log(`IP: ${ip}`);
+    console.log(`Auth: ${authHeader}`);
+    console.log(`Cookies: ${cookies}`);
+    console.log(`User-Agent: ${userAgent.substring(0, 50)}...`);
+
+    if (Object.keys(req.body || {}).length > 0) {
+        // Don't log passwords
+        const sanitizedBody = { ...req.body };
+        if (sanitizedBody.password) sanitizedBody.password = '[REDACTED]';
+        if (sanitizedBody.passwordHash) sanitizedBody.passwordHash = '[REDACTED]';
+        if (sanitizedBody.newPassword) sanitizedBody.newPassword = '[REDACTED]';
+        if (sanitizedBody.oldPassword) sanitizedBody.oldPassword = '[REDACTED]';
+        console.log(`📦 Body: ${JSON.stringify(sanitizedBody).substring(0, 200)}`);
+    }
+
+    if (Object.keys(req.query || {}).length > 0) {
+        console.log(`❓ Query: ${JSON.stringify(req.query)}`);
+    }
+
+    // Log response when it finishes
+    res.on('finish', () => {
+        const duration = Date.now() - startTime;
+        const statusCode = res.statusCode;
+        const statusEmoji = statusCode < 400 ? '✅' : statusCode < 500 ? '⚠️' : '❌';
+
+        console.log(`${statusEmoji} RESPONSE: ${statusCode} | Duration: ${duration}ms`);
+        console.log('========================================\n');
+    });
+
+    next();
+}
+
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+
+    // Add request logger FIRST (before other middleware)
+    app.use(requestLogger);
 
     // Security middleware - Helmet for various HTTP headers
     app.use(helmet({

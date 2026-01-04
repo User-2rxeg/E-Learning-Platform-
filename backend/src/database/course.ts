@@ -19,14 +19,6 @@ export enum CourseLevel {
     ALL_LEVELS = 'all_levels',
 }
 
-// Resource type enum
-export enum ResourceType {
-    VIDEO = 'video',
-    PDF = 'pdf',
-    LINK = 'link',
-    AUDIO = 'audio',
-    DOCUMENT = 'document',
-}
 
 @Schema({ timestamps: true })
 export class Course {
@@ -83,64 +75,9 @@ export class Course {
     @Prop({ type: [String], default: [] })
     targetAudience!: string[];
 
-    // Modules with resources
-    @Prop({
-        type: [
-            {
-                title: { type: String, required: true },
-                description: { type: String },
-                order: { type: Number },
-                estimatedMinutes: { type: Number },
-                isPublished: { type: Boolean, default: true },
-                resources: [
-                    {
-                        title: { type: String },
-                        resourceType: {
-                            type: String,
-                            enum: Object.values(ResourceType),
-                            required: true,
-                        },
-                        url: { type: String, required: true },
-                        description: { type: String },
-                        filename: { type: String },
-                        mimeType: { type: String },
-                        size: { type: Number },
-                        duration: { type: Number }, // For videos in seconds
-                        uploadedBy: { type: Types.ObjectId, ref: 'User' },
-                        uploadedAt: { type: Date, default: Date.now },
-                        order: { type: Number },
-                    },
-                ],
-                quizzes: [{ type: Types.ObjectId, ref: 'Quiz' }],
-                notesEnabled: { type: Boolean, default: true },
-            },
-        ],
-        default: [],
-    })
-    modules!: {
-        _id?: Types.ObjectId;
-        title: string;
-        description?: string;
-        order?: number;
-        estimatedMinutes?: number;
-        isPublished?: boolean;
-        resources: {
-            _id?: Types.ObjectId;
-            title?: string;
-            resourceType: ResourceType;
-            url: string;
-            description?: string;
-            filename?: string;
-            mimeType?: string;
-            size?: number;
-            duration?: number;
-            uploadedBy?: Types.ObjectId;
-            uploadedAt?: Date;
-            order?: number;
-        }[];
-        quizzes?: Types.ObjectId[];
-        notesEnabled?: boolean;
-    }[];
+    // Reference to Module documents instead of embedding
+    @Prop({ type: [Types.ObjectId], ref: 'Module', default: [] })
+    modules!: Types.ObjectId[];
 
     @Prop({ type: [String], default: [] })
     tags!: string[];

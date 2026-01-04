@@ -59,9 +59,12 @@ function LoginContent() {
         setSuccess('');
 
         try {
+            console.log('[Login] Attempting login for:', email);
             const result = await login(email, password);
+            console.log('[Login] Result:', result);
 
             if (!result.success) {
+                console.log('[Login] Failed:', result.error);
                 setError(result.error || 'Login failed');
                 if (result.error?.includes('not verified')) {
                     setTimeout(() => {
@@ -73,6 +76,7 @@ function LoginContent() {
             }
 
             if (result.mfaRequired && result.tempToken) {
+                console.log('[Login] MFA required');
                 setMfaRequired(true);
                 setTempToken(result.tempToken);
                 if (rememberMe) {
@@ -81,10 +85,11 @@ function LoginContent() {
                     localStorage.removeItem('rememberedEmail');
                 }
             } else if (result.user) {
+                console.log('[Login] Success, user:', result.user);
                 handleSuccessfulLogin(result.user);
             }
         } catch (err) {
-            console.error('Login error:', err);
+            console.error('[Login] Error:', err);
             setError('An unexpected error occurred. Please try again.');
         } finally {
             setLoading(false);
@@ -124,6 +129,8 @@ function LoginContent() {
     };
 
     const handleSuccessfulLogin = (user: any) => {
+        console.log('[Login] handleSuccessfulLogin called with user:', user);
+
         if (rememberMe) {
             localStorage.setItem('rememberedEmail', email);
         } else {
@@ -141,8 +148,11 @@ function LoginContent() {
                     ? '/dashboard/instructor'
                     : '/dashboard/student';
 
+        console.log('[Login] Redirecting to:', redirectPath);
+
         // Small delay for user feedback, then redirect
         setTimeout(() => {
+            console.log('[Login] Executing router.replace to:', redirectPath);
             router.replace(redirectPath);
         }, 500);
     };

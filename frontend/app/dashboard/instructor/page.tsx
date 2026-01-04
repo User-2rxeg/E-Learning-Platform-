@@ -108,28 +108,26 @@ export default function InstructorDashboard() {
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
-            // Fetch instructor's courses
-            const allCourses = await courseService.getCourses(1, 100);
-            const instructorCourses = allCourses.courses.filter(
-                (course: any) => course.instructorId._id === user?.id || course.instructorId._id === user?._id
-            );
+            // Fetch instructor's courses using the dedicated endpoint
+            const instructorCourses = await courseService.getInstructorCourses();
+            console.log('Fetched instructor courses:', instructorCourses);
 
-            setCourses(instructorCourses);
+            setCourses(Array.isArray(instructorCourses) ? instructorCourses : []);
 
             // Calculate statistics
-            const dashboardStats = calculateStats(instructorCourses);
+            const dashboardStats = calculateStats(Array.isArray(instructorCourses) ? instructorCourses : []);
             setStats(dashboardStats);
 
             // Generate mock student progress data
-            const progressData = generateStudentProgress(instructorCourses);
+            const progressData = generateStudentProgress(Array.isArray(instructorCourses) ? instructorCourses : []);
             setStudentProgress(progressData);
 
             // Generate recent activity
-            const activities = generateRecentActivity(instructorCourses);
+            const activities = generateRecentActivity(Array.isArray(instructorCourses) ? instructorCourses : []);
             setRecentActivity(activities);
 
             // Generate upcoming classes
-            const classes = generateUpcomingClasses(instructorCourses);
+            const classes = generateUpcomingClasses(Array.isArray(instructorCourses) ? instructorCourses : []);
             setUpcomingClasses(classes);
 
         } catch (error) {

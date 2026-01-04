@@ -80,10 +80,11 @@ export interface Note {
 
 class CourseService {
 
-    async getInstructorCourses(instructorId: string) {
+    // Get courses for the current logged-in instructor
+    async getInstructorCourses() {
         try {
-            const response = await fetch(`/api/courses/instructor/${instructorId}`);
-            return await response.json();
+            const response = await apiClient.get('/courses/my-courses');
+            return response.data;
         } catch (error) {
             console.error('Failed to fetch instructor courses:', error);
             return [];
@@ -92,8 +93,8 @@ class CourseService {
 
     async getInstructorAnalytics(instructorId: string) {
         try {
-            const response = await fetch(`/api/analytics/instructor/${instructorId}/summary`);
-            return await response.json();
+            const response = await apiClient.get(`/analytics/instructor/${instructorId}/summary`);
+            return response.data;
         } catch (error) {
             console.error('Failed to fetch instructor analytics:', error);
             return null;

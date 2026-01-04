@@ -16,7 +16,7 @@ const API_TIMEOUT = 30000;
 // ============================================
 
 const apiClient: AxiosInstance = axios.create({
-    baseURL: `${API_BASE_URL}`,
+    baseURL: API_BASE_URL,
     timeout: API_TIMEOUT,
     headers: {
         'Content-Type': 'application/json',

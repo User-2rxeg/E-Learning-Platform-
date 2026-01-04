@@ -1,22 +1,21 @@
 // src/contexts/AuthContext.tsx
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { sessionManager } from '../server/session-manager';
 
 // ============================================
-// Types & Interfaces
+// Types
 // ============================================
 
-export interface User {
+interface User {
     _id: string;
     id?: string;
     email: string;
     name: string;
     role: 'student' | 'instructor' | 'admin';
-    profileImage?: string;
-    isEmailVerified: boolean;
+    isEmailVerified?: boolean;
     mfaEnabled?: boolean;
     profileComplete?: boolean;
     enrolledCourses?: string[];
@@ -29,14 +28,12 @@ interface AuthContextType {
     loading: boolean;
     error: string | null;
     isAuthenticated: boolean;
-    // Auth methods
     login: (email: string, password: string) => Promise<LoginResult>;
     register: (data: RegisterData) => Promise<RegisterResult>;
     verifyOTP: (email: string, otp: string) => Promise<VerifyResult>;
     verifyMFA: (tempToken: string, code: string) => Promise<MFAResult>;
     logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
-    // Password reset
     forgotPassword: (email: string) => Promise<void>;
     resetPassword: (email: string, otp: string, newPassword: string) => Promise<void>;
     resendOTP: (email: string) => Promise<void>;
@@ -54,19 +51,16 @@ interface RegisterData {
     name: string;
     email: string;
     password: string;
-    role: string;
+    role?: 'student' | 'instructor';
 }
 
 interface RegisterResult {
     success: boolean;
-    message?: string;
-    userId?: string;
     error?: string;
 }
 
 interface VerifyResult {
     success: boolean;
-    user?: User;
     error?: string;
 }
 
@@ -94,6 +88,8 @@ const PUBLIC_ROUTES = [
     '/privacy',
 ];
 
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+
 // ============================================
 // Context
 // ============================================
@@ -110,10 +106,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
     const pathname = usePathname();
-    const mountedRef = useRef(true);
-    const initRef = useRef(false);
+    const initialCheckDone = useRef(false);
 
-    // Normalize user data to ensure consistent id field
+    // Normalize user data
     const normalizeUser = useCallback((userData: any): User => {
         return {
             ...userData,
@@ -121,94 +116,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
     }, []);
 
-    // Check if current path is public
+    // Check if route is public
     const isPublicRoute = useCallback((path: string | null) => {
-        if (!path) return false;
+        if (!path) return true;
         return PUBLIC_ROUTES.some(route => path === route || path.startsWith(route + '/'));
     }, []);
 
-    // Check authentication status
-    const checkAuth = useCallback(async () => {
-        try {
-            // Skip server check for public routes
-            if (isPublicRoute(pathname)) {
-                if (mountedRef.current) setLoading(false);
-                return;
-            }
-
-            const token = sessionManager.getAccessToken();
-
-            // If no token and on protected route
-            if (!token) {
-                if (mountedRef.current) {
-                    setUser(null);
-                    setLoading(false);
-                }
-                router.replace('/login');
-                return;
-            }
-
-            const response = await fetch('/api/auth/me', {
-                credentials: 'include',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const normalizedUser = normalizeUser(data);
-                if (mountedRef.current) {
-                    setUser(normalizedUser);
-                    setError(null);
-                    sessionManager.setUser(normalizedUser);
-                }
-            } else {
-                // Token invalid or expired
-                sessionManager.clearSession();
-                if (mountedRef.current) {
-                    setUser(null);
-                }
-                if (!isPublicRoute(pathname)) {
-                    router.replace('/login');
-                }
-            }
-        } catch (e) {
-            console.error('Auth check failed:', e);
-            if (mountedRef.current) {
-                setUser(null);
-                setError('Failed to verify authentication');
-            }
-        } finally {
-            if (mountedRef.current) {
-                setLoading(false);
-            }
-        }
-    }, [pathname, router, isPublicRoute, normalizeUser]);
-
-    // Initialize on mount
+    // Initialize auth state from cache and verify with server
     useEffect(() => {
-        mountedRef.current = true;
-
-        // Fast client hydration from local storage
-        if (!initRef.current) {
-            initRef.current = true;
+        const initAuth = async () => {
+            // First, try to restore from cache for instant UI
             const cachedUser = sessionManager.getUser();
             if (cachedUser) {
                 setUser(normalizeUser(cachedUser));
             }
-        }
 
-        return () => {
-            mountedRef.current = false;
+            // Then verify with server if we have a token
+            const token = sessionManager.getAccessToken();
+            if (token) {
+                try {
+                    const response = await fetch(`${API_BASE}/auth/me`, {
+                        credentials: 'include',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const normalizedUser = normalizeUser(data);
+                        setUser(normalizedUser);
+                        sessionManager.setUser(normalizedUser);
+                    } else {
+                        // Token invalid - clear but don't redirect yet
+                        console.log('Token invalid, clearing session');
+                        sessionManager.clearSession();
+                        setUser(null);
+                    }
+                } catch (e) {
+                    console.error('Auth check failed:', e);
+                    // Keep cached user on network error
+                }
+            }
+
+            setLoading(false);
+            initialCheckDone.current = true;
         };
+
+        initAuth();
     }, [normalizeUser]);
 
-    // Run server check on mount and path changes
+    // Handle protected route redirects
     useEffect(() => {
-        checkAuth();
-    }, [checkAuth]);
+        if (!initialCheckDone.current || loading) return;
+
+        if (!user && !isPublicRoute(pathname)) {
+            router.replace('/login');
+        }
+    }, [user, pathname, loading, isPublicRoute, router]);
 
     // ============================================
     // Auth Methods
@@ -217,7 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const login = async (email: string, password: string): Promise<LoginResult> => {
         try {
             setError(null);
-            const response = await fetch('/api/auth/login', {
+            const response = await fetch(`${API_BASE}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -227,7 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const data = await response.json();
 
             if (!response.ok) {
-                return { success: false, error: data.error || 'Login failed' };
+                return { success: false, error: data.message || data.error || 'Login failed' };
             }
 
             // Handle MFA requirement
@@ -240,17 +206,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 };
             }
 
+            // Store user and token
             const userData = normalizeUser(data.user);
             setUser(userData);
             sessionManager.setUser(userData);
 
-            // Store access token if provided (main auth is via HTTP-only cookies)
             if (data.accessToken) {
                 sessionManager.setAccessToken(data.accessToken);
             }
 
             return { success: true, user: userData };
         } catch (err) {
+            console.error('Login error:', err);
             const errorMessage = 'Network error. Please try again.';
             setError(errorMessage);
             return { success: false, error: errorMessage };
@@ -260,7 +227,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const register = async (data: RegisterData): Promise<RegisterResult> => {
         try {
             setError(null);
-            const response = await fetch('/api/auth/register', {
+            const response = await fetch(`${API_BASE}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -269,117 +236,120 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const result = await response.json();
 
             if (!response.ok) {
-                return { success: false, error: result.error || 'Registration failed' };
+                return { success: false, error: result.message || result.error || 'Registration failed' };
             }
 
-            // Store email for OTP verification
             sessionManager.setPendingEmail(data.email);
-
-            return {
-                success: true,
-                message: result.message,
-                userId: result.userId,
-            };
+            return { success: true };
         } catch (err) {
-            const errorMessage = 'Network error. Please try again.';
-            setError(errorMessage);
-            return { success: false, error: errorMessage };
+            console.error('Registration error:', err);
+            return { success: false, error: 'Network error. Please try again.' };
         }
     };
 
     const verifyOTP = async (email: string, otp: string): Promise<VerifyResult> => {
         try {
             setError(null);
-            const response = await fetch('/api/auth/verify-otp', {
+            const response = await fetch(`${API_BASE}/auth/verify-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, otp }),
-                credentials: 'include',
+                body: JSON.stringify({ email, otpCode: otp }),
             });
 
-            const data = await response.json();
+            const result = await response.json();
 
             if (!response.ok) {
-                return { success: false, error: data.error || 'Verification failed' };
+                return { success: false, error: result.message || result.error || 'Verification failed' };
             }
 
             sessionManager.clearPendingEmail();
-
-            const userData = normalizeUser(data.user);
-            setUser(userData);
-            sessionManager.setUser(userData);
-
-            // Store tokens if provided
-            if (data.accessToken) {
-                sessionManager.setAccessToken(data.accessToken);
-            }
-
-
-            return { success: true, user: userData };
+            return { success: true };
         } catch (err) {
-            const errorMessage = 'Network error. Please try again.';
-            setError(errorMessage);
-            return { success: false, error: errorMessage };
+            console.error('OTP verification error:', err);
+            return { success: false, error: 'Network error. Please try again.' };
         }
     };
 
     const verifyMFA = async (tempToken: string, code: string): Promise<MFAResult> => {
         try {
             setError(null);
-            const response = await fetch('/api/auth/mfa/verify-login', {
+            const response = await fetch(`${API_BASE}/auth/verify-mfa`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tempToken, token: code }),
+                body: JSON.stringify({ tempToken, mfaCode: code }),
                 credentials: 'include',
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                return { success: false, error: data.error || 'MFA verification failed' };
+                return { success: false, error: data.message || data.error || 'MFA verification failed' };
             }
-
-            sessionManager.clearTempToken();
 
             const userData = normalizeUser(data.user);
             setUser(userData);
             sessionManager.setUser(userData);
+            sessionManager.clearTempToken();
 
-            // Store tokens if provided
             if (data.accessToken) {
                 sessionManager.setAccessToken(data.accessToken);
             }
 
-
             return { success: true, user: userData };
         } catch (err) {
-            const errorMessage = 'Network error. Please try again.';
-            setError(errorMessage);
-            return { success: false, error: errorMessage };
+            console.error('MFA verification error:', err);
+            return { success: false, error: 'Network error. Please try again.' };
         }
     };
 
-    const logout = async () => {
+    const logout = async (): Promise<void> => {
         try {
-            await fetch('/api/auth/logout', {
-                method: 'POST',
-                credentials: 'include',
-            });
-        } catch (err) {
-            console.error('Logout error:', err);
+            const token = sessionManager.getAccessToken();
+            if (token) {
+                await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+            }
+        } catch (e) {
+            console.error('Logout error:', e);
         } finally {
-            setUser(null);
             sessionManager.clearSession();
-            router.push('/login');
+            setUser(null);
+            router.push('/');
         }
     };
 
-    const refreshUser = async () => {
-        await checkAuth();
+    const refreshUser = async (): Promise<void> => {
+        const token = sessionManager.getAccessToken();
+        if (!token) return;
+
+        try {
+            const response = await fetch(`${API_BASE}/auth/me`, {
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const userData = normalizeUser(data);
+                setUser(userData);
+                sessionManager.setUser(userData);
+            }
+        } catch (e) {
+            console.error('Refresh user error:', e);
+        }
     };
 
-    const forgotPassword = async (email: string) => {
-        const response = await fetch('/api/auth/forgot-password', {
+    const forgotPassword = async (email: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/auth/request-password-reset`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email }),
@@ -387,14 +357,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!response.ok) {
             const data = await response.json();
-            throw new Error(data.error || 'Failed to send reset code');
+            throw new Error(data.message || data.error || 'Failed to send reset code');
         }
-
-        sessionManager.setResetEmail(email);
     };
 
-    const resetPassword = async (email: string, otp: string, newPassword: string) => {
-        const response = await fetch('/api/auth/reset-password', {
+    const resetPassword = async (email: string, otp: string, newPassword: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/auth/reset-password`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, otpCode: otp, newPassword }),
@@ -402,14 +370,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!response.ok) {
             const data = await response.json();
-            throw new Error(data.error || 'Failed to reset password');
+            throw new Error(data.message || data.error || 'Failed to reset password');
         }
-
-        sessionManager.clearResetEmail();
     };
-
-    const resendOTP = async (email: string) => {
-        const response = await fetch('/api/auth/resend-otp', {
+    const resendOTP = async (email: string): Promise<void> => {
+        const response = await fetch(`${API_BASE}/auth/resend-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email }),
@@ -417,7 +382,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!response.ok) {
             const data = await response.json();
-            throw new Error(data.error || 'Failed to resend OTP');
+            throw new Error(data.message || data.error || 'Failed to resend OTP');
         }
     };
 
@@ -455,47 +420,3 @@ export function useAuth() {
     }
     return context;
 }
-
-// ============================================
-// HOC for Protected Routes
-// ============================================
-
-export function withAuth<P extends object>(
-    Component: React.ComponentType<P>,
-    allowedRoles?: string[]
-) {
-    return function ProtectedComponent(props: P) {
-        const { user, loading, isAuthenticated } = useAuth();
-        const router = useRouter();
-
-        useEffect(() => {
-            if (!loading) {
-                if (!isAuthenticated) {
-                    router.push('/login');
-                } else if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-                    router.push('/unauthorized');
-                }
-            }
-        }, [loading, isAuthenticated, user, router]);
-
-        if (loading) {
-            return (
-                <div className="min-h-screen flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                </div>
-            );
-        }
-
-        if (!isAuthenticated) {
-            return null;
-        }
-
-        if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-            return null;
-        }
-
-        return <Component {...props} />;
-    };
-}
-
-

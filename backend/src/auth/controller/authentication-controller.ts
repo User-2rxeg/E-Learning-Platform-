@@ -65,7 +65,12 @@ export class AuthController {
         const result = await this.auth.login(dto.email, dto.password);
         const cookie = await this.auth.getCookieWithJwtToken(result.access_token);
         res.setHeader('Set-Cookie', cookie);
-        return { message: 'Login successful', user: result.user };
+        // Return accessToken for client-side storage (used in Authorization header)
+        return {
+            message: 'Login successful',
+            user: result.user,
+            accessToken: result.access_token
+        };
     }
 
 

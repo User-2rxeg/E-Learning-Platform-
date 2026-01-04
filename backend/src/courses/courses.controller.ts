@@ -37,9 +37,43 @@ export class CoursesController {
     constructor(private readonly courseService: CoursesService) {
     }
 
+    // ==========================================
+    // IMPORTANT: Specific routes MUST come BEFORE parameterized routes like :id
+    // ==========================================
+
+    // Get courses for current instructor (My Courses)
+    @Get('my-courses')
+    @Roles(UserRole.INSTRUCTOR)
+    async getInstructorCourses(@CurrentUser() user: JwtPayload) {
+        console.log('📚 Getting courses for instructor:', user.sub);
+        return this.courseService.findByInstructor(user.sub);
+    }
+
+    // Get enrolled courses for current student
+    @Get('enrolled')
+    @Roles(UserRole.STUDENT)
+    async getEnrolledCourses(@CurrentUser() user: JwtPayload) {
+        console.log('📚 Getting enrolled courses for student:', user.sub);
+        return this.courseService.getEnrolledCourses(user.sub);
+    }
+
+    // Search courses
+    @Get('search')
+    async searchCourses(
+        @Query('title') title?: string,
+        @Query('instructorName') instructorName?: string,
+        @Query('tag') tag?: string,
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
+    ) {
+        console.log('🔍 Searching courses:', { title, instructorName, tag, page, limit });
+        return this.courseService.searchCourses({title, instructorName, tag, page, limit});
+    }
+
     @Roles(UserRole.INSTRUCTOR)
     @Post()
     async create(@Body() createCourseDto: CourseDTO) {
+        console.log('📝 Creating new course');
         return this.courseService.create(createCourseDto);
     }
 
@@ -50,23 +84,14 @@ export class CoursesController {
     ) {
         const pageNum = parseInt(page) || 1;
         const limitNum = parseInt(limit) || 10;
+        console.log('📋 Getting all courses, page:', pageNum, 'limit:', limitNum);
         return this.courseService.findAllPaginated(pageNum, limitNum);
     }
 
-    // in src/courses/courses.Controller.ts
-    @Get('search')
-    async searchCourses(
-        @Query('title') title?: string,
-        @Query('instructorName') instructorName?: string,
-        @Query('tag') tag?: string,
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
-        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit = 10,
-    ) {
-        return this.courseService.searchCourses({title, instructorName, tag, page, limit});
-    }
-
+    // This MUST come AFTER specific routes like /my-courses, /enrolled, /search
     @Get(':id')
     async findOne(@Param('id') id: string) {
+        console.log('📖 Getting course by ID:', id);
         return this.courseService.findOne(id);
     }
 
@@ -218,14 +243,6 @@ export class CoursesController {
             requester: { sub: user.sub, role: user.role as UserRole },
         });
     }
-    // Add to CoursesController
-    @Get('enrolled')
-    @Roles(UserRole.STUDENT)
-    async getEnrolledCourses(@CurrentUser() user: JwtPayload) {
-        const studentId = user.sub;
-        return this.courseService.getEnrolledCourses(studentId);
-    }
-
 
 
     @Get('uploads/:filename')

@@ -48,22 +48,22 @@ export default function Navbar() {
     };
 
     // Compute dashboard href based on user role
-    const getDashboardHref = () => {
+    const dashboardHref = useMemo(() => {
         if (!user) return '/dashboard';
         switch (user.role) {
             case 'admin': return '/dashboard/admin';
             case 'instructor': return '/dashboard/instructor';
             default: return '/dashboard/student';
         }
-    };
+    }, [user]);
 
     // Memoize navigation to update when user changes
     const navigation = useMemo(() => [
         { name: 'Home', href: '/', icon: Home, requireAuth: false },
         { name: 'Courses', href: '/courses', icon: BookOpen, requireAuth: false },
         { name: 'Messages', href: '/messages', icon: MessageSquare, requireAuth: true },
-        { name: 'Dashboard', href: getDashboardHref(), icon: LayoutDashboard, requireAuth: true },
-    ], [user?.role]);
+        { name: 'Dashboard', href: dashboardHref, icon: LayoutDashboard, requireAuth: true },
+    ], [dashboardHref]);
 
     const userNavigation = [
         { name: 'Profile', href: '/profile', icon: User },

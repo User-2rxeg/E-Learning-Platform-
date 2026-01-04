@@ -1,7 +1,7 @@
 // src/config/app.config.ts (USE THIS ONE - DELETE config/api.ts)
 export const APP_CONFIG = {
     API: {
-        BASE_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3654',
+        BASE_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000',
         TIMEOUT: 30000,
     },
     ROUTES: {
